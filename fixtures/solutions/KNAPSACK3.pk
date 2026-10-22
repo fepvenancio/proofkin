@@ -1,0 +1,40 @@
+# KNAPSACK3: for each of the 7 non-empty subsets, sum weight and value, zero the value if
+# the weight exceeds cap, then take the MAX over all of them (the empty subset is worth 0).
+puzzle KNAPSACK3
+w0 = IN 0
+v0 = IN 1
+w1 = IN 2
+v1 = IN 3
+w2 = IN 4
+v2 = IN 5
+cap = IN 6
+zero = CONST 0
+w01 = ADD w0 w1
+v01 = ADD v0 v1
+w02 = ADD w0 w2
+v02 = ADD v0 v2
+w12 = ADD w1 w2
+v12 = ADD v1 v2
+w012 = ADD w01 w2
+v012 = ADD v01 v2
+over0 = LT cap w0
+val0 = SEL over0 zero v0
+over1 = LT cap w1
+val1 = SEL over1 zero v1
+over2 = LT cap w2
+val2 = SEL over2 zero v2
+over01 = LT cap w01
+val01 = SEL over01 zero v01
+over02 = LT cap w02
+val02 = SEL over02 zero v02
+over12 = LT cap w12
+val12 = SEL over12 zero v12
+over012 = LT cap w012
+val012 = SEL over012 zero v012
+best1 = MAX val0 val1
+best2 = MAX best1 val2
+best3 = MAX best2 val01
+best4 = MAX best3 val02
+best5 = MAX best4 val12
+best6 = MAX best5 val012
+out best6

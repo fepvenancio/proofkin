@@ -1,0 +1,25 @@
+# FAIR_SPLIT4: if the requests exceed the budget, each gets floor(r * B / total); otherwise each
+# gets its request. Both branches are computed; DIV is safe because every request is >= 1.
+puzzle FAIR_SPLIT4
+b = IN 0
+r0 = IN 1
+r1 = IN 2
+r2 = IN 3
+r3 = IN 4
+s01 = ADD r0 r1
+s012 = ADD s01 r2
+total = ADD s012 r3
+over = LT b total
+p0 = MUL r0 b
+d0 = DIV p0 total
+o0 = SEL over d0 r0
+p1 = MUL r1 b
+d1 = DIV p1 total
+o1 = SEL over d1 r1
+p2 = MUL r2 b
+d2 = DIV p2 total
+o2 = SEL over d2 r2
+p3 = MUL r3 b
+d3 = DIV p3 total
+o3 = SEL over d3 r3
+out o0 o1 o2 o3

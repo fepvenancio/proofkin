@@ -1,0 +1,35 @@
+# foundry
+out/
+cache/
+broadcast/
+coverage/
+lcov.info
+
+# node
+node_modules/
+dist/
+
+# secrets
+.env
+.env.*
+
+# internal knowledge base (never leaves this machine)
+.repo-audit/
+
+# AI tooling: state, config and agent instruction files
+.letta/
+.claude/
+.cursor/
+.cursorrules
+.windsurf/
+.windsurfrules
+.codex/
+.gemini/
+.continue/
+.aider*
+.github/copilot-instructions.md
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+
+.DS_Store

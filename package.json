@@ -1,0 +1,10 @@
+{
+  "name": "proofkin",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:ts": "pnpm --filter @proofkin/vm test",
+    "test:sol": "forge test",
+    "gen:fixtures": "pnpm --filter @proofkin/vm gen:fixtures"
+  }
+}

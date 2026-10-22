@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs><radialGradient id="g"><stop offset="0" stop-color="hsl(144,45%,15%)"/><stop offset="1" stop-color="hsl(144,55%,4%)"/></radialGradient></defs>
+<style>.e{fill:none;stroke:hsl(144,50%,70%);stroke-opacity:.75;stroke-width:1.2;stroke-dasharray:5 7;animation:f 2s linear infinite}@keyframes f{to{stroke-dashoffset:-12}}.o{fill:none;stroke:hsl(144,30%,70%);stroke-opacity:.5;stroke-dasharray:1 8}.h{fill:none;stroke:hsl(188,90%,88%);stroke-width:1.5}.i{fill:hsl(144,60%,62%)}.c{fill:hsl(188,60%,62%)}.a{fill:hsl(232,60%,62%)}.m{fill:hsl(276,60%,62%)}.l{fill:none;stroke-width:2.5;stroke:hsl(320,60%,62%)}.s{fill:hsl(4,60%,62%)}</style>
+<rect width="600" height="600" fill="url(#g)"/>
+<g id="rings" transform="translate(300 300)">
+<circle class="o" r="40"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite"/></circle>
+<circle class="o" r="74"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="27s" repeatCount="indefinite"/></circle>
+<circle class="o" r="108"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="34s" repeatCount="indefinite"/></circle>
+<circle class="o" r="142"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="41s" repeatCount="indefinite"/></circle>
+<circle class="o" r="176"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="48s" repeatCount="indefinite"/></circle>
+<circle class="o" r="210"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="55s" repeatCount="indefinite"/></circle>
+<circle class="o" r="244"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="62s" repeatCount="indefinite"/></circle>
+</g>
+<g id="edges" class="e">
+<path d="M272 271Q281 265 275 230"/>
+<path d="M291 261Q288 262 275 230"/>
+<path d="M328 329Q334 301 370 275"/>
+<path d="M271 328Q314 301 370 275"/>
+<path d="M272 271Q299 314 325 370"/>
+<path d="M309 339Q312 338 325 370"/>
+<path d="M328 329Q285 319 230 325"/>
+<path d="M311 262Q279 295 230 325"/>
+<path d="M325 370Q312 287 308 192"/>
+<path d="M230 325Q278 271 308 192"/>
+<path d="M275 230Q322 297 389 361"/>
+<path d="M289 338Q327 335 389 361"/>
+<path d="M308 192Q326 218 367 175"/>
+<path d="M329 272Q334 246 367 175"/>
+<path d="M389 361Q380 284 439 192"/>
+<path d="M367 175Q372 218 439 192"/>
+<path d="M370 275Q291 308 203 347"/>
+<path d="M339 291Q280 313 203 347"/>
+<path d="M308 192Q279 306 233 425"/>
+<path d="M261 309Q263 347 233 425"/>
+<path d="M203 347Q217 354 161 408"/>
+<path d="M233 425Q228 382 161 408"/>
+<path d="M439 192Q420 244 504 249"/>
+<path d="M262 289Q358 278 504 249"/>
+<path d="M161 408Q180 356 96 351"/>
+<path d="M338 311Q242 322 96 351"/>
+<path d="M504 249Q455 297 540 342"/>
+<path d="M96 351Q313 333 540 342"/>
+</g>
+<g id="nodes">
+<circle class="i" cx="272" cy="271" r="3"/>
+<circle class="i" cx="291" cy="261" r="4"/>
+<circle class="i" cx="311" cy="262" r="4"/>
+<circle class="i" cx="329" cy="272" r="4"/>
+<circle class="i" cx="339" cy="291" r="4"/>
+<circle class="i" cx="338" cy="311" r="3"/>
+<circle class="i" cx="328" cy="329" r="4"/>
+<circle class="i" cx="309" cy="339" r="3"/>
+<circle class="i" cx="289" cy="338" r="2"/>
+<circle class="i" cx="271" cy="328" r="4"/>
+<circle class="i" cx="261" cy="309" r="3"/>
+<circle class="i" cx="262" cy="289" r="4"/>
+<circle class="a" cx="275" cy="230" r="8"/>
+<circle class="a" cx="370" cy="275" r="8"/>
+<circle class="a" cx="325" cy="370" r="7"/>
+<circle class="a" cx="230" cy="325" r="8"/>
+<path class="m" d="M308 185l7 7-7 7-7-7z"/>
+<circle class="a" cx="389" cy="361" r="8"/>
+<circle class="a" cx="367" cy="175" r="8"/>
+<path class="m" d="M439 184l8 8-8 8-8-8z"/>
+<circle class="a" cx="203" cy="347" r="8"/>
+<circle class="a" cx="233" cy="425" r="7"/>
+<path class="m" d="M161 401l7 7-7 7-7-7z"/>
+<circle class="a" cx="504" cy="249" r="8"/>
+<circle class="a" cx="96" cy="351" r="7"/>
+<path class="m" d="M540 335l7 7-7 7-7-7z"/>
+</g>
+<g id="halos">
+<circle class="h" cx="540" cy="342" r="11"><animate attributeName="r" values="11;15;11" dur="2.4s" repeatCount="indefinite"/></circle>
+</g>
+</svg>

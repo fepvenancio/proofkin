@@ -1,0 +1,32 @@
+# GRID_PATH: dynamic programming over the 3x3 grid. dRC = cheapest cost from the top-left node
+# to node (R,C); each node takes the cheaper of arriving from the left or from above.
+# Inputs 0..5 are the horizontal edges row by row, inputs 6..11 the vertical edges row by row.
+puzzle GRID_PATH
+h00 = IN 0   # (0,0)->(0,1)
+h01 = IN 1   # (0,1)->(0,2)
+h10 = IN 2   # (1,0)->(1,1)
+h11 = IN 3   # (1,1)->(1,2)
+h20 = IN 4   # (2,0)->(2,1)
+h21 = IN 5   # (2,1)->(2,2)
+v00 = IN 6   # (0,0)->(1,0)
+v01 = IN 7   # (0,1)->(1,1)
+v02 = IN 8   # (0,2)->(1,2)
+v10 = IN 9   # (1,0)->(2,0)
+v11 = IN 10  # (1,1)->(2,1)
+v12 = IN 11  # (1,2)->(2,2)
+# d01 = h00 and d10 = v00 need no node of their own
+d02 = ADD h00 h01
+d20 = ADD v00 v10
+d11a = ADD h00 v01   # via (0,1)
+d11b = ADD v00 h10   # via (1,0)
+d11 = MIN d11a d11b
+d12a = ADD d02 v02
+d12b = ADD d11 h11
+d12 = MIN d12a d12b
+d21a = ADD d20 h20
+d21b = ADD d11 v11
+d21 = MIN d21a d21b
+d22a = ADD d12 v12
+d22b = ADD d21 h21
+d22 = MIN d22a d22b
+out d22

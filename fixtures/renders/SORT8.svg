@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs><radialGradient id="g"><stop offset="0" stop-color="hsl(274,45%,15%)"/><stop offset="1" stop-color="hsl(274,55%,4%)"/></radialGradient></defs>
+<style>.e{fill:none;stroke:hsl(274,50%,70%);stroke-opacity:.75;stroke-width:1.2;stroke-dasharray:5 7;animation:f 2s linear infinite}@keyframes f{to{stroke-dashoffset:-12}}.o{fill:none;stroke:hsl(274,30%,70%);stroke-opacity:.5;stroke-dasharray:1 8}.h{fill:none;stroke:hsl(326,90%,88%);stroke-width:1.5}.i{fill:hsl(274,65%,70%)}.c{fill:hsl(326,65%,70%)}.a{fill:hsl(18,65%,70%)}.m{fill:hsl(70,65%,70%)}.l{fill:none;stroke-width:2.5;stroke:hsl(122,65%,70%)}.s{fill:hsl(174,65%,70%)}</style>
+<rect width="600" height="600" fill="url(#g)"/>
+<g id="rings" transform="translate(300 300)">
+<circle class="o" r="40"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite"/></circle>
+<circle class="o" r="74"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="27s" repeatCount="indefinite"/></circle>
+<circle class="o" r="108"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="34s" repeatCount="indefinite"/></circle>
+<circle class="o" r="142"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="41s" repeatCount="indefinite"/></circle>
+<circle class="o" r="176"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="48s" repeatCount="indefinite"/></circle>
+<circle class="o" r="210"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="55s" repeatCount="indefinite"/></circle>
+<circle class="o" r="244"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="62s" repeatCount="indefinite"/></circle>
+</g>
+<g id="edges" class="e">
+<path d="M272 271Q281 265 275 230"/>
+<path d="M301 260Q292 262 275 230"/>
+<path d="M272 271Q301 266 332 233"/>
+<path d="M301 260Q312 263 332 233"/>
+<path d="M329 272Q335 281 370 275"/>
+<path d="M340 301Q339 292 370 275"/>
+<path d="M329 272Q334 301 367 332"/>
+<path d="M340 301Q337 312 367 332"/>
+<path d="M328 329Q319 335 325 370"/>
+<path d="M299 340Q308 339 325 370"/>
+<path d="M328 329Q299 334 268 367"/>
+<path d="M299 340Q288 337 268 367"/>
+<path d="M271 328Q265 319 230 325"/>
+<path d="M260 299Q262 308 230 325"/>
+<path d="M271 328Q266 299 233 268"/>
+<path d="M260 299Q263 288 233 268"/>
+<path d="M275 230Q294 238 308 192"/>
+<path d="M370 275Q327 253 308 192"/>
+<path d="M275 230Q320 251 382 229"/>
+<path d="M370 275Q353 266 382 229"/>
+<path d="M332 233Q349 279 408 308"/>
+<path d="M367 332Q361 314 408 308"/>
+<path d="M332 233Q336 305 371 382"/>
+<path d="M367 332Q348 340 371 382"/>
+<path d="M325 370Q306 362 292 408"/>
+<path d="M230 325Q273 347 292 408"/>
+<path d="M325 370Q280 349 218 371"/>
+<path d="M230 325Q247 334 218 371"/>
+<path d="M268 367Q251 321 192 292"/>
+<path d="M233 268Q239 286 192 292"/>
+<path d="M268 367Q264 295 229 218"/>
+<path d="M233 268Q252 260 229 218"/>
+<path d="M408 308Q361 259 367 175"/>
+<path d="M382 229Q352 231 367 175"/>
+<path d="M408 308Q385 288 436 259"/>
+<path d="M382 229Q376 261 436 259"/>
+<path d="M192 292Q306 321 425 367"/>
+<path d="M218 371Q315 348 425 367"/>
+<path d="M192 292Q277 345 341 436"/>
+<path d="M218 371Q286 372 341 436"/>
+<path d="M308 192Q279 306 233 425"/>
+<path d="M292 408Q274 382 233 425"/>
+<path d="M308 192Q255 277 164 341"/>
+<path d="M292 408Q250 352 164 341"/>
+<path d="M367 175Q372 218 439 192"/>
+<path d="M425 367Q392 286 439 192"/>
+<path d="M367 175Q361 305 408 439"/>
+<path d="M425 367Q382 372 408 439"/>
+<path d="M436 259Q299 323 161 408"/>
+<path d="M341 436Q266 385 161 408"/>
+<path d="M436 259Q310 237 192 161"/>
+<path d="M341 436Q277 299 192 161"/>
+<path d="M371 382Q281 305 175 233"/>
+<path d="M229 218Q231 248 175 233"/>
+<path d="M371 382Q311 281 259 164"/>
+<path d="M229 218Q261 224 259 164"/>
+<path d="M161 408Q323 320 504 249"/>
+<path d="M164 341Q324 297 504 249"/>
+<path d="M161 408Q269 409 351 504"/>
+<path d="M164 341Q270 386 351 504"/>
+<path d="M175 233Q185 294 96 351"/>
+<path d="M408 439Q266 367 96 351"/>
+<path d="M175 233Q238 205 249 96"/>
+<path d="M408 439Q320 277 249 96"/>
+<path d="M439 192Q433 277 540 342"/>
+<path d="M504 249Q455 297 540 342"/>
+<path d="M439 192Q378 342 384 529"/>
+<path d="M504 249Q401 362 384 529"/>
+<path d="M96 351Q174 383 144 487"/>
+<path d="M351 504Q263 437 144 487"/>
+<path d="M96 351Q145 303 60 258"/>
+<path d="M351 504Q234 357 60 258"/>
+<path d="M249 96Q253 148 216 71"/>
+<path d="M192 161Q233 171 216 71"/>
+<path d="M249 96Q337 163 456 113"/>
+<path d="M192 161Q317 186 456 113"/>
+</g>
+<g id="nodes">
+<circle class="i" cx="272" cy="271" r="5"/>
+<circle class="i" cx="301" cy="260" r="4"/>
+<circle class="i" cx="329" cy="272" r="6"/>
+<circle class="i" cx="340" cy="301" r="6"/>
+<circle class="i" cx="328" cy="329" r="6"/>
+<circle class="i" cx="299" cy="340" r="3"/>
+<circle class="i" cx="271" cy="328" r="5"/>
+<circle class="i" cx="260" cy="299" r="6"/>
+<path class="m" d="M275 222l8 8-8 8-8-8z"/>
+<path class="m" d="M332 223l10 10-10 10-10-10z"/>
+<path class="m" d="M370 264l11 11-11 11-11-11z"/>
+<path class="m" d="M367 321l11 11-11 11-11-11z"/>
+<path class="m" d="M325 364l6 6-6 6-6-6z"/>
+<path class="m" d="M268 356l11 11-11 11-11-11z"/>
+<path class="m" d="M230 315l10 10-10 10-10-10z"/>
+<path class="m" d="M233 257l11 11-11 11-11-11z"/>
+<path class="m" d="M308 184l8 8-8 8-8-8z"/>
+<path class="m" d="M382 218l11 11-11 11-11-11z"/>
+<path class="m" d="M408 298l10 10-10 10-10-10z"/>
+<path class="m" d="M371 371l11 11-11 11-11-11z"/>
+<path class="m" d="M292 402l6 6-6 6-6-6z"/>
+<path class="m" d="M218 361l10 10-10 10-10-10z"/>
+<path class="m" d="M192 281l11 11-11 11-11-11z"/>
+<path class="m" d="M229 207l11 11-11 11-11-11z"/>
+<path class="m" d="M367 165l10 10-10 10-10-10z"/>
+<path class="m" d="M436 248l11 11-11 11-11-11z"/>
+<path class="m" d="M425 357l10 10-10 10-10-10z"/>
+<path class="m" d="M341 425l11 11-11 11-11-11z"/>
+<path class="m" d="M233 419l6 6-6 6-6-6z"/>
+<path class="m" d="M164 333l8 8-8 8-8-8z"/>
+<path class="m" d="M439 182l10 10-10 10-10-10z"/>
+<path class="m" d="M408 429l10 10-10 10-10-10z"/>
+<path class="m" d="M161 397l11 11-11 11-11-11z"/>
+<path class="m" d="M192 150l11 11-11 11-11-11z"/>
+<path class="m" d="M175 222l11 11-11 11-11-11z"/>
+<path class="m" d="M259 153l11 11-11 11-11-11z"/>
+<path class="m" d="M504 241l8 8-8 8-8-8z"/>
+<path class="m" d="M351 493l11 11-11 11-11-11z"/>
+<path class="m" d="M96 341l10 10-10 10-10-10z"/>
+<path class="m" d="M249 85l11 11-11 11-11-11z"/>
+<path class="m" d="M540 334l8 8-8 8-8-8z"/>
+<path class="m" d="M384 519l10 10-10 10-10-10z"/>
+<path class="m" d="M144 477l10 10-10 10-10-10z"/>
+<path class="m" d="M60 247l11 11-11 11-11-11z"/>
+<path class="m" d="M216 60l11 11-11 11-11-11z"/>
+<path class="m" d="M456 102l11 11-11 11-11-11z"/>
+</g>
+<g id="halos">
+<circle class="h" cx="233" cy="425" r="10"><animate attributeName="r" values="10;14;10" dur="2.4s" repeatCount="indefinite"/></circle>
+<circle class="h" cx="259" cy="164" r="15"><animate attributeName="r" values="15;19;15" dur="2.4s" repeatCount="indefinite"/></circle>
+<circle class="h" cx="540" cy="342" r="12"><animate attributeName="r" values="12;16;12" dur="2.4s" repeatCount="indefinite"/></circle>
+<circle class="h" cx="384" cy="529" r="14"><animate attributeName="r" values="14;18;14" dur="2.4s" repeatCount="indefinite"/></circle>
+<circle class="h" cx="144" cy="487" r="14"><animate attributeName="r" values="14;18;14" dur="2.4s" repeatCount="indefinite"/></circle>
+<circle class="h" cx="60" cy="258" r="15"><animate attributeName="r" values="15;19;15" dur="2.4s" repeatCount="indefinite"/></circle>
+<circle class="h" cx="216" cy="71" r="15"><animate attributeName="r" values="15;19;15" dur="2.4s" repeatCount="indefinite"/></circle>
+<circle class="h" cx="456" cy="113" r="15"><animate attributeName="r" values="15;19;15" dur="2.4s" repeatCount="indefinite"/></circle>
+</g>
+</svg>

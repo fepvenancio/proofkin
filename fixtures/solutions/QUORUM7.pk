@@ -1,0 +1,20 @@
+# QUORUM7: sum the seven votes, then answer NOT(sum < t).
+puzzle QUORUM7
+v0 = IN 0
+v1 = IN 1
+v2 = IN 2
+v3 = IN 3
+v4 = IN 4
+v5 = IN 5
+v6 = IN 6
+t = IN 7
+s1 = ADD v0 v1
+s2 = ADD s1 v2
+s3 = ADD s2 v3
+s4 = ADD s3 v4
+s5 = ADD s4 v5
+s6 = ADD s5 v6
+lt = LT s6 t
+zero = CONST 0
+ok = EQ lt zero
+out ok

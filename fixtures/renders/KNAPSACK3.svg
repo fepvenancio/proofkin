@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs><radialGradient id="g"><stop offset="0" stop-color="hsl(349,45%,15%)"/><stop offset="1" stop-color="hsl(349,55%,4%)"/></radialGradient></defs>
+<style>.e{fill:none;stroke:hsl(349,50%,70%);stroke-opacity:.75;stroke-width:1.2;stroke-dasharray:5 7;animation:f 2s linear infinite}@keyframes f{to{stroke-dashoffset:-12}}.o{fill:none;stroke:hsl(349,30%,70%);stroke-opacity:.5;stroke-dasharray:1 8}.h{fill:none;stroke:hsl(29,90%,88%);stroke-width:1.5}.i{fill:hsl(349,78%,66%)}.c{fill:hsl(29,78%,66%)}.a{fill:hsl(69,78%,66%)}.m{fill:hsl(109,78%,66%)}.l{fill:none;stroke-width:2.5;stroke:hsl(149,78%,66%)}.s{fill:hsl(189,78%,66%)}</style>
+<rect width="600" height="600" fill="url(#g)"/>
+<g id="rings" transform="translate(300 300)">
+<circle class="o" r="40"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite"/></circle>
+<circle class="o" r="66"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="27s" repeatCount="indefinite"/></circle>
+<circle class="o" r="92"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="34s" repeatCount="indefinite"/></circle>
+<circle class="o" r="118"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="41s" repeatCount="indefinite"/></circle>
+<circle class="o" r="144"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="48s" repeatCount="indefinite"/></circle>
+<circle class="o" r="170"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="55s" repeatCount="indefinite"/></circle>
+<circle class="o" r="196"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="62s" repeatCount="indefinite"/></circle>
+<circle class="o" r="222"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="69s" repeatCount="indefinite"/></circle>
+<circle class="o" r="248"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="76s" repeatCount="indefinite"/></circle>
+</g>
+<g id="edges" class="e">
+<path d="M272 271Q283 268 278 238"/>
+<path d="M329 272Q302 269 278 238"/>
+<path d="M301 260Q308 264 323 238"/>
+<path d="M340 301Q322 279 323 238"/>
+<path d="M272 271Q310 278 357 267"/>
+<path d="M328 329Q330 299 357 267"/>
+<path d="M301 260Q323 290 365 312"/>
+<path d="M299 340Q322 318 365 312"/>
+<path d="M329 272Q325 308 342 351"/>
+<path d="M328 329Q325 328 342 351"/>
+<path d="M340 301Q314 323 300 366"/>
+<path d="M299 340Q300 337 300 366"/>
+<path d="M278 238Q295 246 307 208"/>
+<path d="M328 329Q312 278 307 208"/>
+<path d="M323 238Q333 257 370 240"/>
+<path d="M299 340Q324 293 370 240"/>
+<path d="M271 328Q275 327 257 350"/>
+<path d="M272 271Q275 307 257 350"/>
+<path d="M257 350Q317 320 392 307"/>
+<path d="M260 299Q318 302 392 307"/>
+<path d="M301 260Q333 288 392 307"/>
+<path d="M271 328Q267 314 235 311"/>
+<path d="M329 272Q287 294 235 311"/>
+<path d="M235 311Q298 328 360 370"/>
+<path d="M260 299Q307 324 360 370"/>
+<path d="M340 301Q335 325 360 370"/>
+<path d="M271 328Q270 298 243 267"/>
+<path d="M328 329Q290 299 243 267"/>
+<path d="M243 267Q278 321 293 392"/>
+<path d="M260 299Q284 332 293 392"/>
+<path d="M299 340Q297 346 293 392"/>
+<path d="M271 328Q265 331 230 360"/>
+<path d="M278 238Q268 299 230 360"/>
+<path d="M230 360Q295 285 356 196"/>
+<path d="M260 299Q306 263 356 196"/>
+<path d="M323 238Q328 242 356 196"/>
+<path d="M271 328Q258 307 208 293"/>
+<path d="M357 267Q288 286 208 293"/>
+<path d="M208 293Q308 305 416 321"/>
+<path d="M260 299Q327 307 416 321"/>
+<path d="M365 312Q363 312 416 321"/>
+<path d="M271 328Q269 285 240 230"/>
+<path d="M342 351Q294 293 240 230"/>
+<path d="M240 230Q285 316 316 417"/>
+<path d="M260 299Q292 341 316 417"/>
+<path d="M300 366Q306 364 316 417"/>
+<path d="M271 328Q253 328 194 352"/>
+<path d="M307 208Q265 286 194 352"/>
+<path d="M194 352Q303 287 414 211"/>
+<path d="M260 299Q326 269 414 211"/>
+<path d="M370 240Q364 248 414 211"/>
+<path d="M392 307Q304 273 218 215"/>
+<path d="M360 370Q292 295 218 215"/>
+<path d="M218 215Q231 301 186 389"/>
+<path d="M293 392Q258 363 186 389"/>
+<path d="M186 389Q318 317 465 259"/>
+<path d="M356 196Q377 249 465 259"/>
+<path d="M465 259Q425 298 493 334"/>
+<path d="M416 321Q408 319 493 334"/>
+<path d="M493 334Q432 355 485 423"/>
+<path d="M316 417Q370 384 485 423"/>
+<path d="M485 423Q411 417 433 510"/>
+<path d="M414 211Q386 342 433 510"/>
+</g>
+<g id="nodes">
+<circle class="i" cx="272" cy="271" r="3"/>
+<circle class="i" cx="301" cy="260" r="4"/>
+<circle class="i" cx="329" cy="272" r="4"/>
+<circle class="i" cx="340" cy="301" r="2"/>
+<circle class="i" cx="328" cy="329" r="3"/>
+<circle class="i" cx="299" cy="340" r="4"/>
+<circle class="i" cx="271" cy="328" r="5"/>
+<rect class="c" x="257" y="296" width="6" height="6"/>
+<circle class="a" cx="278" cy="238" r="7"/>
+<circle class="a" cx="323" cy="238" r="8"/>
+<circle class="a" cx="357" cy="267" r="7"/>
+<circle class="a" cx="365" cy="312" r="9"/>
+<circle class="a" cx="342" cy="351" r="7"/>
+<circle class="a" cx="300" cy="366" r="7"/>
+<circle class="a" cx="307" cy="208" r="8"/>
+<circle class="a" cx="370" cy="240" r="9"/>
+<path class="m" d="M257 346l4 4-4 4-4-4z"/>
+<path class="s" d="M392 299l8 16h-16z"/>
+<path class="m" d="M235 307l4 4-4 4-4-4z"/>
+<path class="s" d="M360 366l4 8h-8z"/>
+<path class="m" d="M243 263l4 4-4 4-4-4z"/>
+<path class="s" d="M293 385l7 14h-14z"/>
+<path class="m" d="M230 356l4 4-4 4-4-4z"/>
+<path class="s" d="M356 188l8 16h-16z"/>
+<path class="m" d="M208 289l4 4-4 4-4-4z"/>
+<path class="s" d="M416 312l9 18h-18z"/>
+<path class="m" d="M240 226l4 4-4 4-4-4z"/>
+<path class="s" d="M316 410l7 14h-14z"/>
+<path class="m" d="M194 348l4 4-4 4-4-4z"/>
+<path class="s" d="M414 202l9 18h-18z"/>
+<path class="m" d="M218 207l8 8-8 8-8-8z"/>
+<path class="m" d="M186 381l8 8-8 8-8-8z"/>
+<path class="m" d="M465 251l8 8-8 8-8-8z"/>
+<path class="m" d="M493 325l9 9-9 9-9-9z"/>
+<path class="m" d="M485 414l9 9-9 9-9-9z"/>
+<path class="m" d="M433 501l9 9-9 9-9-9z"/>
+</g>
+<g id="halos">
+<circle class="h" cx="433" cy="510" r="13"><animate attributeName="r" values="13;17;13" dur="2.4s" repeatCount="indefinite"/></circle>
+</g>
+</svg>

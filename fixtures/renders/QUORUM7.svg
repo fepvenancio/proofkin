@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs><radialGradient id="g"><stop offset="0" stop-color="hsl(199,45%,15%)"/><stop offset="1" stop-color="hsl(199,55%,4%)"/></radialGradient></defs>
+<style>.e{fill:none;stroke:hsl(199,50%,70%);stroke-opacity:.75;stroke-width:1.2;stroke-dasharray:5 7;animation:f 2s linear infinite}@keyframes f{to{stroke-dashoffset:-12}}.o{fill:none;stroke:hsl(199,30%,70%);stroke-opacity:.5;stroke-dasharray:1 8}.h{fill:none;stroke:hsl(247,90%,88%);stroke-width:1.5}.i{fill:hsl(199,70%,66%)}.c{fill:hsl(247,70%,66%)}.a{fill:hsl(295,70%,66%)}.m{fill:hsl(343,70%,66%)}.l{fill:none;stroke-width:2.5;stroke:hsl(31,70%,66%)}.s{fill:hsl(79,70%,66%)}</style>
+<rect width="600" height="600" fill="url(#g)"/>
+<g id="rings" transform="translate(300 300)">
+<circle class="o" r="40"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite"/></circle>
+<circle class="o" r="66"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="27s" repeatCount="indefinite"/></circle>
+<circle class="o" r="92"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="34s" repeatCount="indefinite"/></circle>
+<circle class="o" r="118"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="41s" repeatCount="indefinite"/></circle>
+<circle class="o" r="144"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="48s" repeatCount="indefinite"/></circle>
+<circle class="o" r="170"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="55s" repeatCount="indefinite"/></circle>
+<circle class="o" r="196"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="62s" repeatCount="indefinite"/></circle>
+<circle class="o" r="222"><animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="69s" repeatCount="indefinite"/></circle>
+<circle class="o" r="248"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="76s" repeatCount="indefinite"/></circle>
+</g>
+<g id="edges" class="e">
+<path d="M272 271Q283 268 278 238"/>
+<path d="M297 260Q291 264 278 238"/>
+<path d="M278 238Q295 246 307 208"/>
+<path d="M324 268Q311 257 307 208"/>
+<path d="M307 208Q322 231 356 196"/>
+<path d="M339 291Q333 260 356 196"/>
+<path d="M356 196Q360 232 414 211"/>
+<path d="M336 318Q353 275 414 211"/>
+<path d="M414 211Q398 255 465 259"/>
+<path d="M316 337Q363 299 465 259"/>
+<path d="M465 259Q425 298 493 334"/>
+<path d="M289 338Q364 325 493 334"/>
+<path d="M493 334Q432 355 485 423"/>
+<path d="M267 322Q353 351 485 423"/>
+<path d="M485 423Q411 417 433 510"/>
+<path d="M260 296Q333 372 433 510"/>
+</g>
+<g id="nodes">
+<circle class="i" cx="272" cy="271" r="3"/>
+<circle class="i" cx="297" cy="260" r="3"/>
+<circle class="i" cx="324" cy="268" r="3"/>
+<circle class="i" cx="339" cy="291" r="3"/>
+<circle class="i" cx="336" cy="318" r="3"/>
+<circle class="i" cx="316" cy="337" r="3"/>
+<circle class="i" cx="289" cy="338" r="3"/>
+<circle class="i" cx="267" cy="322" r="3"/>
+<circle class="a" cx="278" cy="238" r="5"/>
+<circle class="a" cx="307" cy="208" r="6"/>
+<circle class="a" cx="356" cy="196" r="6"/>
+<circle class="a" cx="414" cy="211" r="6"/>
+<circle class="a" cx="465" cy="259" r="6"/>
+<circle class="a" cx="493" cy="334" r="7"/>
+<path class="m" d="M485 419l4 4-4 4-4-4z"/>
+<rect class="c" x="257" y="293" width="6" height="6"/>
+<path class="m" d="M433 505l5 5-5 5-5-5z"/>
+</g>
+<g id="halos">
+<circle class="h" cx="433" cy="510" r="9"><animate attributeName="r" values="9;13;9" dur="2.4s" repeatCount="indefinite"/></circle>
+</g>
+</svg>

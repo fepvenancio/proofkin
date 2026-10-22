@@ -1,0 +1,19 @@
+# MEDIAN5: order two pairs, drop the smaller low and the larger high (neither can be the
+# median), then take the median of the three survivors a, b, x4.
+puzzle MEDIAN5
+x0 = IN 0
+x1 = IN 1
+x2 = IN 2
+x3 = IN 3
+x4 = IN 4
+lo1 = MIN x0 x1
+hi1 = MAX x0 x1
+lo2 = MIN x2 x3
+hi2 = MAX x2 x3
+a = MAX lo1 lo2
+b = MIN hi1 hi2
+lo = MIN a b
+hi = MAX a b
+t = MIN hi x4
+m = MAX lo t
+out m
