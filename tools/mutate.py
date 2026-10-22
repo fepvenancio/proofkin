@@ -7,6 +7,7 @@ reports any mutant that survives. Sources are restored afterwards, even on Ctrl-
     python3 tools/mutate.py vm         # VM.sol / Puzzles.sol, judged by the differential suite alone
     python3 tools/mutate.py renderer   # Renderer.sol, judged by its Solidity tests and the TS SVG check
     python3 tools/mutate.py proofkin   # Proofkin.sol, judged by its unit, admin and invariant tests
+    python3 tools/mutate.py playground # the playground's mint flow, phases, gate, storage, gallery decoding
 
 Extra arguments keep only the mutations whose label contains one of them (case-insensitive), to re-run
 a few survivors without the whole suite:
@@ -104,6 +105,33 @@ SUITES = {
             ("anyone can set the renderer", "contracts/src/Proofkin.sol", "function setRenderer(address renderer_) external onlyOwner {", "function setRenderer(address renderer_) external {"),
             ("anyone can withdraw", "contracts/src/Proofkin.sol", "function withdraw() external onlyOwner {", "function withdraw() external {"),
             ("renderer may be zero", "contracts/src/Proofkin.sol", "        if (renderer_ == address(0)) revert InvalidRenderer();\n", ""),
+        ],
+    },
+    # The playground's money-and-salt logic, judged by its whole test suite (which runs the real contracts on Anvil).
+    "playground": {
+        "stages": [stage("playground tests", "pnpm --filter @proofkin/playground test")],
+        "mutations": [
+            ("window opens a block early", "packages/playground/src/phase.ts", "if (currentBlock <= commitBlock + REVEAL_DELAY) {", "if (currentBlock < commitBlock + REVEAL_DELAY) {"),
+            ("expiry measured against block.number, not the inclusion block", "packages/playground/src/phase.ts", "if (currentBlock >= commitBlock + REVEAL_WINDOW) return", "if (currentBlock > commitBlock + REVEAL_WINDOW) return"),
+            ("countdown off by one", "packages/playground/src/phase.ts", "blocksLeft: commitBlock + REVEAL_WINDOW - 1 - currentBlock", "blocksLeft: commitBlock + REVEAL_WINDOW - currentBlock"),
+            ("commit hash drops the sender", "packages/playground/src/commitment.ts", "[{ type: \"bytes\" }, { type: \"address\" }, { type: \"bytes32\" }], [toHex(program), sender, salt]", "[{ type: \"bytes\" }, { type: \"bytes32\" }], [toHex(program), salt]"),
+            ("program hash skips a byte", "packages/playground/src/commitment.ts", "return keccak256(toHex(program));", "return keccak256(`0x${toHex(program).slice(4)}` as Hex);"),
+            ("salt not saved before the commit is sent", "packages/playground/src/mint.ts", "  deps.store.save(pending);\n  return pending;\n}", "  return pending;\n}"),
+            ("commit result not recorded", "packages/playground/src/mint.ts", "  deps.store.save(next);\n  return next;\n}\n\n/** A commit that landed", "  return next;\n}\n\n/** A commit that landed"),
+            ("no guard against an expired window", "packages/playground/src/mint.ts", "  if ((await phaseOf(deps, pending)).phase === \"expired\") throw new MintError(EXPIRED);\n", ""),
+            ("reveal sends the wrong payment", "packages/playground/src/mint.ts", "    value: mintPrice,", "    value: 0n,"),
+            ("reconcile trusts a commit that never landed", "packages/playground/src/mint.ts", "if (block === 0) return pending;", "if (block === 0) return { ...pending, status: \"committed\" };"),
+            ("edge case threshold off by one in the message", "packages/playground/src/mint.ts", "Number(trial) < 2 ?", "Number(trial) <= 2 ?"),
+            ("gate ignores a mint in progress", "packages/playground/src/mintGate.ts", "  if (i.busy) return no(\"A mint is in progress, please wait.\");\n", ""),
+            ("gate allows an already-minted program", "packages/playground/src/mintGate.ts", "  if (i.onChain === \"alreadyMinted\") return no(\"This exact program has already been minted.\");\n", ""),
+            ("saved commits matched case-sensitively", "packages/playground/src/storage.ts", "p.account.toLowerCase() === filter.account.toLowerCase()", "p.account === filter.account"),
+            ("a refused write still claims persistence", "packages/playground/src/storage.ts", "    } catch {\n      this.persistent = false;\n    }", "    } catch {\n      // ignored\n    }"),
+            ("block number served from cache", "packages/playground/src/chain.ts", "client.getBlockNumber({ cacheTime: 0 })", "client.getBlockNumber()"),
+            ("an already-minted program reported as free", "packages/playground/src/chain.ts", "  if (seen) return \"alreadyMinted\";\n", ""),
+            ("any image URL accepted in a token", "packages/playground/src/gallery.ts", "if (typeof meta.image !== \"string\" || !meta.image.startsWith(SVG_PREFIX)) {", "if (typeof meta.image !== \"string\") {"),
+            ("leaderboard ties not broken by order", "packages/playground/src/gallery.ts", "a.nodeCount - b.nodeCount || a.rank - b.rank", "a.nodeCount - b.nodeCount"),
+            ("every wallet error treated as an unknown network", "packages/playground/src/wallet.ts", "    if (errorCode(e) !== UNKNOWN_CHAIN) throw e;\n", ""),
+            ("a zero block time accepted", "packages/playground/src/config.ts", "if (!(blockTime > 0))", "if (blockTime < 0)"),
         ],
     },
     # Each mutant regenerates the snapshots, then both the Solidity unit tests and the TS structural

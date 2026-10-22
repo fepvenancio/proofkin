@@ -12,6 +12,7 @@ dist/
 # secrets
 .env
 .env.*
+!.env.example
 
 # internal knowledge base (never leaves this machine)
 .repo-audit/

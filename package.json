@@ -3,8 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:ts": "pnpm --filter @proofkin/vm test",
+    "test:ts": "pnpm -r test",
     "test:sol": "forge test",
-    "gen:fixtures": "pnpm --filter @proofkin/vm gen:fixtures"
+    "gen:fixtures": "pnpm --filter @proofkin/vm gen:fixtures",
+    "dev:chain": "pnpm --filter @proofkin/playground dev:chain",
+    "dev:playground": "pnpm --filter @proofkin/playground dev",
+    "build:playground": "pnpm --filter @proofkin/playground build"
   }
 }
