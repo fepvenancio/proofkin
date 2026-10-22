@@ -79,7 +79,7 @@ library Puzzles {
         if (x.length != inputCount(id)) revert BadInputLength();
 
         if (id == QUORUM7) {
-            uint256 votes;
+            uint256 votes = 0;
             for (uint256 i; i < 7; ++i) {
                 votes += x[i];
             }
@@ -166,6 +166,7 @@ library Puzzles {
 
     function _gridPath(uint256[] memory x) private pure returns (uint256) {
         // d[3r + c] is the cheapest cost from (0,0) to (r,c).
+        // slither-disable-next-line uninitialized-local -- a fresh memory array is zeroed; d[0] (the start) stays 0
         uint256[9] memory d;
         for (uint256 r; r < 3; ++r) {
             for (uint256 c; c < 3; ++c) {
@@ -185,8 +186,8 @@ library Puzzles {
     /// @dev x = w0, v0, w1, v1, w2, v2, cap.
     function _knapsack3(uint256[] memory x) private pure returns (uint256 best) {
         for (uint256 mask = 1; mask < 8; ++mask) {
-            uint256 weight;
-            uint256 value;
+            uint256 weight = 0;
+            uint256 value = 0;
             for (uint256 i; i < 3; ++i) {
                 if (mask & (1 << i) != 0) {
                     weight += x[2 * i];

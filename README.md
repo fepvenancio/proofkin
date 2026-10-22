@@ -6,14 +6,14 @@ mints the token, and renders an animated SVG from the program's structure and it
 
 Working title. The specification is [PLAN.md](PLAN.md); notes on each milestone are in [docs/](docs/).
 
-**Status:** the VM, the six puzzles and the renderer are done (milestones 1 and 2). The mint contract
-(`Proofkin.sol`, milestone 3) is next.
+**Status:** the VM, the six puzzles, the renderer and the mint contract (`Proofkin.sol`) are done
+(milestones 1 to 3). The playground is next.
 
 ## Layout
 
 | Path | What |
 |---|---|
-| `contracts/` | Solidity (Foundry): `VM`, `Puzzles`, `Renderer`, and their tests |
+| `contracts/` | Solidity (Foundry): `VM`, `Puzzles`, `Renderer`, `Proofkin`, and their tests |
 | `packages/vm/` | TypeScript reference VM, assembler and fixture generator |
 | `fixtures/` | Differential test vectors, the solution circuits, SVG snapshots |
 | `tools/` | Mutation testing and fixture helpers |

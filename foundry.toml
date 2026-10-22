@@ -22,6 +22,10 @@ gas_limit = 9223372036854775807
 [fuzz]
 runs = 512
 
+[invariant]
+runs = 32
+depth = 120
+
 [fmt]
 line_length = 100
 tab_width = 4

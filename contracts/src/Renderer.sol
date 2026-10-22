@@ -6,6 +6,7 @@ import {FixedPointMathLib} from "solady/utils/FixedPointMathLib.sol";
 import {LibString} from "solady/utils/LibString.sol";
 import {SSTORE2} from "solady/utils/SSTORE2.sol";
 import {IProofkin} from "./IProofkin.sol";
+import {IRenderer} from "./IRenderer.sol";
 import {Puzzles} from "./Puzzles.sol";
 import {VM} from "./VM.sol";
 
@@ -26,7 +27,7 @@ import {VM} from "./VM.sol";
 ///      - Rings are drawn as dashed orbit tracks that rotate (alternating direction, period 20 + 7d
 ///        seconds). The graph itself stays still so that edges stay attached to their nodes: two
 ///        rings turning at different speeds would tear every edge between them off its endpoints.
-contract Renderer {
+contract Renderer is IRenderer {
     error BufferOverflow();
     error NoSuchToken();
 
@@ -182,12 +183,13 @@ contract Renderer {
     /// @dev The most common of arithmetic, compare, logic and select by node count; a tie goes to
     ///      the earlier of those, and "None" means the program is only IN and CONST nodes.
     function _dominantFamily(bytes memory program) private pure returns (string memory) {
+        // slither-disable-next-line uninitialized-local -- a fresh memory array is zeroed, which is the starting count
         uint256[6] memory counts;
         for (uint256 i; i < uint8(program[2]); ++i) {
             ++counts[_family(uint8(program[4 + 4 * i]))];
         }
-        uint256 best;
-        uint256 winner;
+        uint256 best = 0;
+        uint256 winner = 0;
         for (uint256 f = ARITHMETIC; f <= SELECT; ++f) {
             if (counts[f] > best) (best, winner) = (counts[f], f);
         }
@@ -204,6 +206,7 @@ contract Renderer {
         uint256 n = uint8(program[2]);
         l.n = n;
         l.depth = VM.depths(program);
+        // slither-disable-next-line unused-return -- a preview of a program that fails this trial still renders, so ok/outputs are not needed
         (,, l.value) = VM.run(program, Puzzles.inputs(uint8(program[1]), seed, 2));
 
         uint256 layers = 1;
@@ -218,6 +221,7 @@ contract Renderer {
         }
 
         uint256[] memory placed = new uint256[](layers);
+        // slither-disable-start divide-before-multiply -- §6.1: radius = 40 + d * (240 / layers), a floor by design
         uint256 spacing = 240 / layers;
         l.x = new uint256[](n);
         l.y = new uint256[](n);
@@ -227,6 +231,7 @@ contract Renderer {
             uint256 angle =
                 (uint256(uint8(seed[d % 32])) * 16 + placed[d]++ * 4096 / total[d]) % 4096;
             (l.x[i], l.y[i]) = _point(40 + d * spacing, angle);
+            // slither-disable-end divide-before-multiply
         }
     }
 
@@ -340,10 +345,12 @@ contract Renderer {
 
     function _rings(Buf memory out, Layout memory l) private pure {
         _put(out, '<g id="rings" transform="translate(300 300)">\n');
+        // slither-disable-start divide-before-multiply -- the same floor as the layout, so rings match their nodes
         uint256 spacing = 240 / l.layers;
         for (uint256 d; d < l.layers; ++d) {
             _put(out, '<circle class="o" r="');
             _num(out, 40 + d * spacing);
+            // slither-disable-end divide-before-multiply
             // even layers turn clockwise, odd layers the other way
             (bytes memory from, bytes memory to) =
                 d % 2 == 0 ? (bytes("0"), bytes("360")) : (bytes("360"), bytes("0"));
@@ -424,6 +431,7 @@ contract Renderer {
     function _glyph(Buf memory out, uint256 op, uint256 px, uint256 py, uint256 s) private pure {
         uint256 family = _family(op);
         if (family == CONSTANT) {
+            // slither-disable-start divide-before-multiply -- the half-side is floor(3s/4), and the square is exactly 2h wide
             uint256 h = (3 * s) / 4;
             _put(out, '<rect class="c" x="');
             _num(out, px - h);
@@ -433,6 +441,7 @@ contract Renderer {
             _num(out, 2 * h);
             _put(out, '" height="');
             _num(out, 2 * h);
+            // slither-disable-end divide-before-multiply
             _put(out, '"/>\n');
         } else if (family == COMPARE) {
             // diamond: top, right, bottom, left
@@ -485,7 +494,7 @@ contract Renderer {
         uint256 outputsAt = 4 + 4 * l.n;
         uint256 outCount = uint8(program[3]);
 
-        uint256 isOutput; // bit i set when node i is an output
+        uint256 isOutput = 0; // bit i set when node i is an output
         for (uint256 s; s < outCount; ++s) {
             isOutput |= uint256(1) << uint8(program[outputsAt + s]);
         }

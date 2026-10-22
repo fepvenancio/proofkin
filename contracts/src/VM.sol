@@ -97,7 +97,7 @@ library VM {
         }
 
         // Bit i of `live` is set once node i is known to feed an output.
-        uint256 live;
+        uint256 live = 0;
         uint256 outputsAt = 4 + 4 * n;
         for (uint256 s; s < outCount; ++s) {
             uint256 o = uint8(program[outputsAt + s]);

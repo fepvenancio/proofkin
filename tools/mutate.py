@@ -6,6 +6,12 @@ reports any mutant that survives. Sources are restored afterwards, even on Ctrl-
 
     python3 tools/mutate.py vm         # VM.sol / Puzzles.sol, judged by the differential suite alone
     python3 tools/mutate.py renderer   # Renderer.sol, judged by its Solidity tests and the TS SVG check
+    python3 tools/mutate.py proofkin   # Proofkin.sol, judged by its unit, admin and invariant tests
+
+Extra arguments keep only the mutations whose label contains one of them (case-insensitive), to re-run
+a few survivors without the whole suite:
+
+    python3 tools/mutate.py proofkin "too small" "first output"
 
 Exit status is 1 if a mutant survives or a snapshot did not restore byte-for-byte.
 """
@@ -55,6 +61,51 @@ SUITES = {
             ),
         ],
     },
+    # Proofkin.sol: every mutant is run against the three test layers separately, to see which one
+    # notices (an invariant that only the invariants catch is worth knowing about).
+    "proofkin": {
+        "stages": [
+            stage("unit", "forge test --match-path contracts/test/Proofkin.t.sol"),
+            stage("admin", "forge test --match-path contracts/test/ProofkinAdmin.t.sol"),
+            stage("invariants", "forge test --match-path contracts/test/Proofkin.invariants.t.sol"),
+        ],
+        "mutations": [
+            ("commit may overwrite a commit", "contracts/src/Proofkin.sol", "        if (commitBlock[h] != 0) revert AlreadyCommitted();\n", ""),
+            ("commit hash ignores msg.sender", "contracts/src/Proofkin.sol", "bytes32 h = keccak256(abi.encode(program, msg.sender, salt));", "bytes32 h = keccak256(abi.encode(program, salt));"),
+            ("window opens one block early", "contracts/src/Proofkin.sol", "if (block.number <= committedAt + REVEAL_DELAY) revert TooEarly();", "if (block.number < committedAt + REVEAL_DELAY) revert TooEarly();"),
+            ("window closes one block early", "contracts/src/Proofkin.sol", "if (block.number > committedAt + REVEAL_WINDOW) revert Expired();", "if (block.number >= committedAt + REVEAL_WINDOW) revert Expired();"),
+            ("window never closes", "contracts/src/Proofkin.sol", "        if (block.number > committedAt + REVEAL_WINDOW) revert Expired();\n", ""),
+            ("zero blockhash accepted", "contracts/src/Proofkin.sol", "        if (blockHash == bytes32(0)) revert NoBlockhash();\n", ""),
+            ("seed ignores the commit hash", "contracts/src/Proofkin.sol", "return keccak256(abi.encode(blockHash, h));", "return blockHash;"),
+            ("seed uses the latest block, not commit + 2", "contracts/src/Proofkin.sol", "bytes32 blockHash = blockhash(committedAt + REVEAL_DELAY);", "bytes32 blockHash = blockhash(block.number - 1);"),
+            ("overpaying accepted", "contracts/src/Proofkin.sol", "if (msg.value != mintPrice) revert WrongPayment();", "if (msg.value < mintPrice) revert WrongPayment();"),
+            ("underpaying accepted", "contracts/src/Proofkin.sol", "if (msg.value != mintPrice) revert WrongPayment();", "if (msg.value > mintPrice) revert WrongPayment();"),
+            ("a program can be minted twice", "contracts/src/Proofkin.sol", "        if (seen[programHash]) revert AlreadyMinted();\n", ""),
+            ("program never marked seen", "contracts/src/Proofkin.sol", "        seen[programHash] = true;\n", ""),
+            ("51st solution accepted", "contracts/src/Proofkin.sol", "if (solvedCount[puzzleId] >= SLOTS) revert PuzzleFull();", "if (solvedCount[puzzleId] > SLOTS) revert PuzzleFull();"),
+            ("only two trials checked", "contracts/src/Proofkin.sol", "for (uint256 trial; trial < Puzzles.TRIALS; ++trial) {\n            uint256[] memory x = Puzzles.inputs(puzzleId, seed, trial);", "for (uint256 trial; trial < 2; ++trial) {\n            uint256[] memory x = Puzzles.inputs(puzzleId, seed, trial);"),
+            ("outputs too SMALL pass the check", "contracts/src/Proofkin.sol", "if (a[i] != b[i]) return false;", "if (a[i] > b[i]) return false;"),
+            ("outputs too LARGE pass the check", "contracts/src/Proofkin.sol", "if (a[i] != b[i]) return false;", "if (a[i] < b[i]) return false;"),
+            ("only the first output is compared", "contracts/src/Proofkin.sol", "for (uint256 i; i < a.length; ++i) {\n            if (a[i] != b[i]) return false;", "for (uint256 i; i < 1; ++i) {\n            if (a[i] != b[i]) return false;"),
+            ("program is not validated", "contracts/src/Proofkin.sol", "        VM.validate(p);\n", ""),
+            ("commit not cleared by reveal", "contracts/src/Proofkin.sol", "        delete commitBlock[h];\n", ""),
+            ("rank is zero-based", "contracts/src/Proofkin.sol", "uint16 rank = uint16(++solvedCount[puzzleId]);", "uint16 rank = uint16(solvedCount[puzzleId]++);"),
+            ("equal size counts as a record", "contracts/src/Proofkin.sol", "bool recordAtMint = nodeCount < bestNodes[puzzleId];", "bool recordAtMint = nodeCount <= bestNodes[puzzleId];"),
+            ("bestNodes starts at 254", "contracts/src/Proofkin.sol", "            bestNodes[p] = 255;", "            bestNodes[p] = 254;"),
+            ("depth is not recorded", "contracts/src/Proofkin.sol", "            if (nodeDepth > deepest) deepest = nodeDepth;\n", ""),
+            ("token ids start at 0", "contracts/src/Proofkin.sol", "uint256 id = ++totalSupply;", "uint256 id = totalSupply++;"),
+            ("_safeMint instead of _mint", "contracts/src/Proofkin.sol", "        _mint(msg.sender, id);\n", "        _safeMint(msg.sender, id);\n"),
+            ("token minted to the owner", "contracts/src/Proofkin.sol", "        _mint(msg.sender, id);\n", "        _mint(owner(), id);\n"),
+            ("Solved names the wrong author", "contracts/src/Proofkin.sol", "emit Solved(id, uint8(puzzleId), msg.sender, nodeCount, rank);", "emit Solved(id, uint8(puzzleId), owner(), nodeCount, rank);"),
+            ("tokenURI of a missing token", "contracts/src/Proofkin.sol", "        if (!_exists(id)) revert TokenDoesNotExist();\n", ""),
+            ("setRenderer ignores the lock", "contracts/src/Proofkin.sol", "        if (rendererLocked) revert RendererLocked();\n", ""),
+            ("lockRenderer does not lock", "contracts/src/Proofkin.sol", "        rendererLocked = true;\n", "        rendererLocked = false;\n"),
+            ("anyone can lock the renderer", "contracts/src/Proofkin.sol", "function lockRenderer() external onlyOwner {", "function lockRenderer() external {"),
+            ("anyone can set the renderer", "contracts/src/Proofkin.sol", "function setRenderer(address renderer_) external onlyOwner {", "function setRenderer(address renderer_) external {"),
+            ("anyone can withdraw", "contracts/src/Proofkin.sol", "function withdraw() external onlyOwner {", "function withdraw() external {"),
+            ("renderer may be zero", "contracts/src/Proofkin.sol", "        if (renderer_ == address(0)) revert InvalidRenderer();\n", ""),
+        ],
+    },
     # Each mutant regenerates the snapshots, then both the Solidity unit tests and the TS structural
     # check (which recomputes the layout in floating point) get a chance to catch it.
     "renderer": {
@@ -94,9 +145,12 @@ def fingerprint(pattern):
     return h.hexdigest()[:12]
 
 
-def main(name):
+def main(name, only):
     suite = SUITES[name]
-    files = sorted({m[1] for m in suite["mutations"]})
+    mutations = [m for m in suite["mutations"] if not only or any(o.lower() in m[0].lower() for o in only)]
+    if not mutations:
+        sys.exit(f"no mutation label contains any of {only}")
+    files = sorted({m[1] for m in mutations})
     backup = Path(tempfile.mkdtemp(prefix="proofkin-mutate-"))
     for f in files:
         dest = backup / f
@@ -106,7 +160,7 @@ def main(name):
 
     survivors = []
     try:
-        for label, f, old, new in suite["mutations"]:
+        for label, f, old, new in mutations:
             path = ROOT / f
             text = path.read_text()
             if text.count(old) != 1:
@@ -140,6 +194,6 @@ def main(name):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2 or sys.argv[1] not in SUITES:
+    if len(sys.argv) < 2 or sys.argv[1] not in SUITES:
         sys.exit(__doc__)
-    sys.exit(main(sys.argv[1]))
+    sys.exit(main(sys.argv[1], sys.argv[2:]))
