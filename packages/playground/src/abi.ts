@@ -537,14 +537,14 @@ export const proofkinAbi = [
     ],
     "outputs": [
       {
-        "name": "program",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
         "name": "seed",
         "type": "bytes32",
         "internalType": "bytes32"
+      },
+      {
+        "name": "program",
+        "type": "address",
+        "internalType": "address"
       },
       {
         "name": "puzzleId",

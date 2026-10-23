@@ -5,9 +5,12 @@ pragma solidity ^0.8.28;
 /// @dev Both match what `mapping(uint256 => Token) public tokens` and a public `bestNodes`
 ///      array generate, so Proofkin.sol only has to declare them that way. The struct is §5.2's.
 interface IProofkin {
+    /// @dev Two storage slots: `seed` fills the first alone, and everything else (26 bytes) fits the
+    ///      second. Declaring `program` first would waste a slot, because a 32-byte seed cannot share
+    ///      one with it.
     struct Token {
-        address program; // SSTORE2 pointer
         bytes32 seed; // render + replay seed
+        address program; // SSTORE2 pointer
         uint8 puzzleId;
         uint8 nodeCount;
         uint8 depth;

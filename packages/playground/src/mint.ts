@@ -7,6 +7,7 @@ import {
   parseEventLogs,
   UserRejectedRequestError,
 } from "viem";
+import { TRIALS } from "@proofkin/vm";
 import { proofkinAbi } from "./abi.ts";
 import { commitBlockOf, currentBlock, type Reader } from "./chain.ts";
 import { commitHash, newSalt } from "./commitment.ts";
@@ -38,6 +39,9 @@ export class MintError extends Error {}
 
 const EXPIRED = "The 250-block reveal window for this commit has passed. Commit again, with a new salt.";
 
+/** Trials 0 and 1 are fixed edge cases, trials 2 to 9 random, and the contract only reports a trial its own puzzle has, so any from TRIALS on is one of the puzzle's further fixed cases. */
+const isFixedTrial = (trial: number): boolean => trial < 2 || trial >= TRIALS;
+
 const reasons: Record<string, (args: readonly unknown[]) => string> = {
   NoCommit: () => "There is no commit for this program from this account: the account, the program or the salt does not match what was committed.",
   TooEarly: () => "Too early: a reveal has to wait until the commit is three blocks old.",
@@ -48,7 +52,7 @@ const reasons: Record<string, (args: readonly unknown[]) => string> = {
   PuzzleFull: () => "All 50 slots of this puzzle are taken.",
   AlreadyCommitted: () => "This commit has already been made.",
   SolveFailed: ([trial]) =>
-    `The contract's own check failed on trial ${trial} (${Number(trial) < 2 ? "one of the two fixed edge cases" : "one of its random cases"}). ` +
+    `The contract's own check failed on trial ${trial} (${isFixedTrial(Number(trial)) ? "one of the fixed edge cases" : "one of its random cases"}). ` +
     "A program that passes the local test can still fail the contract's cases: test it harder.",
   BadLength: vmInvalid("its length does not match its header"),
   BadVersion: vmInvalid("its version is wrong"),

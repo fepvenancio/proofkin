@@ -5,8 +5,8 @@ import {Test} from "forge-std/Test.sol";
 import {VM} from "../src/VM.sol";
 import {Puzzles} from "../src/Puzzles.sol";
 
-/// @notice §4.2: every puzzle has a hand-written solution under 64 nodes that solves all 10 trials
-///         on 1,000 seeds. The programs are fixtures/solutions/*.pk, assembled into
+/// @notice §4.2: every puzzle has a hand-written solution under 64 nodes that solves every one of its
+///         trials (`Puzzles.trialCount`) on 1,000 seeds. The programs are fixtures/solutions/*.pk, assembled into
 ///         fixtures/solutions.json by `pnpm gen:fixtures`.
 contract SolutionsTest is Test {
     uint256 constant SEEDS = 1000;
@@ -29,7 +29,7 @@ contract SolutionsTest is Test {
             mark := mload(0x40)
         }
         for (seed; seed < SEEDS; ++seed) {
-            for (trial = 0; trial < Puzzles.TRIALS; ++trial) {
+            for (trial = 0; trial < Puzzles.trialCount(id); ++trial) {
                 uint256[] memory x = Puzzles.inputs(id, bytes32(seed), trial);
                 (bool ok, uint256[] memory outputs,) = VM.run(program, x);
                 bool wrong = !ok

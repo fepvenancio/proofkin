@@ -24,8 +24,9 @@ import {VM} from "./VM.sol";
 ///         sender, so revealing later cannot be used to shop for friendlier inputs. It is not known at
 ///         commit time, but it is known to everyone from block `commitBlock + 2` on, and the committer
 ///         may simply never reveal: someone willing to pay for several commits of one program can keep
-///         the reveal whose seed it passes. "Solved" means passing 2 fixed and 8 seeded trials, not a
-///         proof of correctness.
+///         the reveal whose seed it passes. "Solved" means passing the puzzle's fixed trials and 8
+///         seeded ones (`Puzzles.trialCount`), not a proof of correctness. The fixed trials ignore the
+///         seed, so what a committer can shop for is only the luck of the 8 seeded ones.
 ///
 ///      The sequencer (or any block producer) can influence `blockhash`, so the seed is not
 ///      unbiasable. That is acceptable here: the stakes are an art project's mint order.
@@ -168,9 +169,11 @@ contract Proofkin is ERC721, Ownable {
         return keccak256(abi.encode(blockHash, h));
     }
 
-    /// @dev All 10 trials must run without arithmetic failure and give exactly the reference outputs.
+    /// @dev Every trial of the puzzle must run without arithmetic failure and give exactly the
+    ///      reference outputs.
     function _requireSolves(bytes memory p, uint256 puzzleId, bytes32 seed) private pure {
-        for (uint256 trial; trial < Puzzles.TRIALS; ++trial) {
+        uint256 trials = Puzzles.trialCount(puzzleId);
+        for (uint256 trial; trial < trials; ++trial) {
             uint256[] memory x = Puzzles.inputs(puzzleId, seed, trial);
             // slither-disable-next-line unused-return -- only the success flag and the outputs matter here
             (bool ok, uint256[] memory got,) = VM.run(p, x);

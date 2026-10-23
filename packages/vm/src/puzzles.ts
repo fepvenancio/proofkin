@@ -2,7 +2,10 @@
 import { encodeAbiParameters, type Hex, keccak256 } from "viem";
 
 export const PUZZLE_COUNT = 6;
-/** Trials 0 and 1 are fixed edge cases, trials 2..9 are seeded-random. */
+/**
+ * Trials 0 and 1 are fixed edge cases, trials 2..9 are seeded-random. A puzzle may add further fixed trials
+ * from TRIALS on (see `trialCount`); past those, trials are random again.
+ */
 export const TRIALS = 10;
 
 type Range = readonly [lo: number, hi: number];
@@ -12,8 +15,8 @@ interface PuzzleSpec {
   /** Inclusive [lo, hi] for every input slot. */
   ranges: readonly Range[];
   outputs: number;
-  /** Inputs for trials 0 and 1. */
-  fixed: readonly [readonly number[], readonly number[]];
+  /** Inputs for trials 0 and 1, then for the further fixed trials TRIALS, TRIALS + 1, ... */
+  fixed: readonly (readonly number[])[];
   solve: (x: readonly number[]) => number[];
 }
 
@@ -73,8 +76,8 @@ const PUZZLES: readonly PuzzleSpec[] = [
     ranges: [...repeat(7, [0, 1]), [1, 7]],
     outputs: 1,
     fixed: [
-      [...fill(7, 0), 7],
-      [...fill(7, 1), 1],
+      [...fill(7, 0), 1], // sum == t - 1
+      [...fill(7, 1), 7], // sum == t
     ],
     solve: (x) => [sum(x.slice(0, 7)) >= x[7]! ? 1 : 0],
   },
@@ -89,14 +92,29 @@ const PUZZLES: readonly PuzzleSpec[] = [
     name: "SORT8",
     ranges: repeat(8, [0, 255]),
     outputs: 8,
-    fixed: [fill(8, 128), [224, 192, 160, 128, 96, 64, 32, 0]],
+    fixed: [
+      fill(8, 128),
+      [224, 192, 160, 128, 96, 64, 32, 0],
+      [0, 64, 96, 160, 32, 192, 128, 224],
+      [0, 96, 32, 160, 64, 128, 192, 224],
+    ],
     solve: sortAsc,
   },
   {
     name: "GRID_PATH",
     ranges: repeat(12, [0, 15]),
     outputs: 1,
-    fixed: [fill(12, 0), fill(12, 15)],
+    fixed: [
+      fill(12, 0),
+      fill(12, 15),
+      // weights 1, 2, 3, 4 along the path, 15 elsewhere: RRDD, RDRD, RDDR, DRRD, DRDR, DDRR
+      [1, 2, 15, 15, 15, 15, 15, 15, 3, 15, 15, 4],
+      [1, 15, 15, 3, 15, 15, 15, 2, 15, 15, 15, 4],
+      [1, 15, 15, 15, 15, 4, 15, 2, 15, 15, 3, 15],
+      [15, 15, 2, 3, 15, 15, 1, 15, 15, 15, 15, 4],
+      [15, 15, 2, 15, 15, 4, 1, 15, 15, 15, 3, 15],
+      [15, 15, 15, 15, 3, 4, 1, 15, 15, 2, 15, 15],
+    ],
     solve: (x) => [gridPath(x)],
   },
   {
@@ -106,6 +124,13 @@ const PUZZLES: readonly PuzzleSpec[] = [
     fixed: [
       [6, 50, 10, 40, 20, 30, 5], // every weight > cap
       [1, 10, 1, 20, 1, 30, 40], // every weight 1, cap 40
+      // all weights 10; the best set weighs exactly the cap and beats every other set that fits
+      [10, 50, 10, 20, 10, 30, 10], // item 0 alone
+      [10, 20, 10, 50, 10, 30, 10], // item 1 alone
+      [10, 20, 10, 30, 10, 50, 10], // item 2 alone
+      [10, 30, 10, 30, 10, 10, 20], // items 0 and 1
+      [10, 30, 10, 10, 10, 30, 20], // items 0 and 2
+      [10, 10, 10, 30, 10, 30, 20], // items 1 and 2
     ],
     solve: (x) => [knapsack3(x)],
   },
@@ -129,16 +154,26 @@ function spec(puzzleId: number): PuzzleSpec {
   return p;
 }
 
+/** How many trials a solution must pass: TRIALS, plus the puzzle's further fixed cases. */
+export const trialCount = (puzzleId: number): number => TRIALS + spec(puzzleId).fixed.length - 2;
+
+/** The trials whose inputs ignore the seed: 0 and 1, then TRIALS and up for the puzzles that have more. */
+export function fixedTrials(puzzleId: number): number[] {
+  const extra = trialCount(puzzleId) - TRIALS;
+  return [0, 1, ...Array.from({ length: extra }, (_, k) => TRIALS + k)];
+}
+
 export const inputCount = (puzzleId: number): number => spec(puzzleId).ranges.length;
 export const outputCount = (puzzleId: number): number => spec(puzzleId).outputs;
 
 /**
- * Inputs for one trial. Trials 0 and 1 are fixed edge cases; otherwise
- * `lo + uint256(keccak256(abi.encode(seed, trial, i))) % (hi - lo + 1)`.
+ * Inputs for one trial. Trials 0 and 1, and the further fixed trials TRIALS .. trialCount - 1, ignore the seed;
+ * every other trial is `lo + uint256(keccak256(abi.encode(seed, trial, i))) % (hi - lo + 1)`.
  */
 export function inputs(puzzleId: number, seed: Hex, trial: number): number[] {
   const p = spec(puzzleId);
-  if (trial === 0 || trial === 1) return [...p.fixed[trial]];
+  if (trial === 0 || trial === 1) return [...p.fixed[trial]!];
+  if (trial >= TRIALS && trial < trialCount(puzzleId)) return [...p.fixed[2 + trial - TRIALS]!];
   return p.ranges.map(([lo, hi], i) => {
     const h = keccak256(
       encodeAbiParameters(

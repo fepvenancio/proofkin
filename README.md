@@ -6,9 +6,10 @@ mints the token, and renders an animated SVG from the program's structure and it
 
 Working title. The specification is [PLAN.md](PLAN.md); notes on each milestone are in [docs/](docs/).
 
-**Status:** the VM, the six puzzles, the renderer and the mint contract are done (milestones 1 to 3). The
-playground (milestone 4) works end to end against a local chain; running it on Base Sepolia waits for the
-deployment in milestone 5.
+**Status:** the VM, the six puzzles, the renderer and the mint contract are done (milestones 1 to 3), and the
+fixed test cases were hardened before launch ([docs/M3.5-notes.md](docs/M3.5-notes.md)). The playground
+(milestone 4) works end to end against a local chain; running it on Base Sepolia waits for the deployment in
+milestone 5.
 
 ## Layout
 

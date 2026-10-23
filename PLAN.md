@@ -49,7 +49,7 @@ fixtures/             # generated differential test vectors (JSON)
 
 - **Program**: a straight-line DAG of at most 64 nodes. Each node computes one value from earlier nodes. There are no loops and no jumps, so gas is bounded by construction.
 - **Puzzle**: a defined input→output function. The contract holds a reference solver and an input generator.
-- **Solve**: the program's outputs equal the reference outputs on all 10 trials (2 fixed edge cases + 8 random).
+- **Solve**: the program's outputs equal the reference outputs on every trial of its puzzle: 2 fixed edge cases, 8 random trials, and for GRID_PATH, KNAPSACK3 and SORT8 some further fixed cases (§4.1).
 - **Token**: one valid, unique solution. Its traits come from the program (size, depth, op mix) and its solve order.
 
 ---
@@ -156,13 +156,18 @@ There are 6 puzzles with 50 slots each, so supply is 300.
 ### 4.1 Input generation
 
 - Trials 0 and 1 are fixed edge cases per puzzle:
-  - QUORUM7: all zero votes with t = 7, and all one votes with t = 1.
+  - QUORUM7: all zero votes with t = 1, and all one votes with t = 7. Each sits exactly on the threshold, one from each side, so a program that ignores a voter, or compares with `>` or `t - 1`, cannot pass.
   - MEDIAN5 / SORT8: all equal, and strictly descending.
   - GRID_PATH: all zero, and all 15.
   - KNAPSACK3: every weight > cap, and every weight 1 with cap 40.
   - FAIR_SPLIT4: sum == B exactly, and sum > B with all r = 1000.
 - Trials 2..9 are random: `inputs[i] = lo + uint256(keccak256(abi.encode(seed, trial, i))) % (hi - lo + 1)`.
-- Expose this as `inputs(puzzleId, seed, trial) -> uint256[]`. The TS port must match byte-for-byte.
+- Trials 10 and up are further fixed cases, for the puzzles with many separate branches that a random trial rarely forces. They ignore `seed`, and a puzzle without any treats trial 10 and up as random again. `trialCount(puzzleId)` is the number of trials a solution must pass: 10 for QUORUM7, MEDIAN5 and FAIR_SPLIT4, 12 for SORT8, 16 for GRID_PATH and KNAPSACK3.
+  - GRID_PATH, trials 10..15: one case per monotone path, in the order RRDD, RDRD, RDDR, DRRD, DRDR, DDRR (R right, D down). The four edges of that path weigh 1, 2, 3, 4 in the order travelled and every other edge 15, so that path is the single cheapest.
+  - KNAPSACK3, trials 10..12: each single item is the unique best set, with weight equal to the cap (all weights 10, cap 10, the item's value 50 against 20 and 30). Trials 13..15: each pair is the unique best set, with weight equal to the cap (all weights 10, cap 20, the pair's two items worth 30 each and the third item 10, in the order {0,1}, {0,2}, {1,2}).
+  - SORT8, trials 10 and 11: the permutations `[0,64,96,160,32,192,128,224]` and `[0,96,32,160,64,128,192,224]`. Together with trials 0 and 1 they expose the removal of any one comparator from the usual 19-comparator network.
+  - Why: with only two fixed cases a program that ignores a QUORUM7 voter, misses a GRID_PATH path or forgets a KNAPSACK3 subset passed all trials about half of the time, and a committer could try several salts. Each of these cases makes one such omission fail on every seed.
+- Expose this as `inputs(puzzleId, seed, trial) -> uint256[]` and `trialCount(puzzleId)`. The TS port must match byte-for-byte.
 
 ### 4.2 Solvability (must be proven in tests)
 
@@ -199,7 +204,7 @@ function reveal(bytes calldata program, bytes32 salt) external payable;
    - The sequencer could still influence the seed. That is acceptable for an art project, and the NatSpec must say so.
 4. Require `msg.value == mintPrice` (an immutable set at deploy; it may be 0).
 5. Validate the program (§3.3), and require `solvedCount[puzzleId] < 50`.
-6. Run all 10 trials and require `ok` and outputs == reference on every one.
+6. Run all `trialCount(puzzleId)` trials and require `ok` and outputs == reference on every one.
 7. Store the program with `SSTORE2.write`, and record the token data (§5.2).
 8. Delete the commit, update the counters and best scores, mark `seen`, and `_mint` (not `_safeMint`) to `msg.sender`.
 9. Emit `Solved(tokenId, puzzleId, author, nodeCount, rank)`.
@@ -210,8 +215,8 @@ On any failure, revert with a custom error. A failed reveal can be retried after
 
 ```solidity
 struct Token {
-    address program;    // SSTORE2 pointer
-    bytes32 seed;       // render + replay seed
+    bytes32 seed;       // render + replay seed (slot 0)
+    address program;    // SSTORE2 pointer; with the fields below it fills slot 1
     uint8   puzzleId;
     uint8   nodeCount;
     uint8   depth;      // longest path from any IN/CONST (which have depth 0) to an output
@@ -286,7 +291,7 @@ Art direction may be refined in milestone 2, but it must stay deterministic and 
 
 - Total supply ≤ 300, and `solvedCount[p] ≤ 50` for every puzzle.
 - No two tokens share `keccak256(program)`.
-- Every minted program passes `validate` and solves all 10 trials when re-run on its stored seed.
+- Every minted program passes `validate` and solves all `trialCount` trials when re-run on its stored seed.
 - `run` never reverts on any valid program and arbitrary inputs; arithmetic failures return `ok = false`. Fuzz this.
 - A commit is bound to its sender: another address cannot reveal it.
 - A reveal outside the window reverts, and so does a reveal with a zero blockhash.
@@ -311,7 +316,7 @@ Art direction may be refined in milestone 2, but it must stay deterministic and 
 This is a static site (Vite + TS + viem) with no backend.
 
 - An editor for the assembly syntax, with puzzle selection and a puzzle description that includes the GRID_PATH edge-order diagram.
-- **Test locally**: run against the 2 fixed and 100 random inputs using the TS VM, and show the first failing case.
+- **Test locally**: run against every fixed case of the puzzle (§4.1) and 100 random inputs using the TS VM, and show the first failing case.
 - **Preview**: call `Renderer.render(program, randomSeed)` via `eth_call`.
 - **Mint flow**:
   1. Connect wallet.

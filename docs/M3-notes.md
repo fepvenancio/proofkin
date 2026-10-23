@@ -57,6 +57,10 @@ later cannot shop for inputs (`test_revealingLaterGivesTheSameSeed`). The NatSpe
 Neither is changed here: the plan says no extra features. Both bear on whether the leaderboard and the
 "Optimal" trait mean what they appear to.
 
+*Since then:* milestone 3.5 narrowed the second point (harder fixed cases for QUORUM7, GRID_PATH,
+KNAPSACK3 and SORT8; see [M3.5-notes.md](M3.5-notes.md)). The first is unchanged, and so is the commit-grinding
+cost.
+
 ## How §7 is covered
 
 | §7 | Where |

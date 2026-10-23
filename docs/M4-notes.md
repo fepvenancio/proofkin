@@ -26,7 +26,7 @@ happened yet, so milestone 4's "works on Base Sepolia" is not demonstrated.
 |---|---|
 | `src/puzzleInfo.ts` | What each puzzle says (ranges, edge cases, rule), the GRID_PATH edge numbering and diagram, each puzzle's hue |
 | `src/analyze.ts` | Editor text to a program, or to an explanation naming the player's own node and line; the starting program |
-| `src/localTest.ts` | The test run: 2 fixed edge cases and 100 random ones on the TS VM, first failing case reported |
+| `src/localTest.ts` | The test run: every fixed edge case of the puzzle (2, or more since milestone 3.5) and 100 random ones on the TS VM, first failing case reported |
 | `src/commitment.ts`, `src/storage.ts` | The commit hash (the contract's layout), the salt, and the saved commits that survive a closed tab |
 | `src/phase.ts`, `src/mintGate.ts` | Where a commit is in its reveal window; when the Mint button may be pressed |
 | `src/mint.ts` | Prepare, commit, reconcile, reveal; every transaction simulated first; revert reasons in plain words |

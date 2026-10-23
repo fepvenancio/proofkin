@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { assemble } from "../src/asm.ts";
+import { generateCheats } from "../src/cheats.ts";
 import {
+  generateCheatFixtures,
   generateDiffFixtures,
   generateSolutions,
   INVALID_COUNT,
@@ -95,7 +97,7 @@ describe("diff fixtures: invalid programs", () => {
 });
 
 describe("diff fixtures: input/reference vectors", () => {
-  it("match inputs() and reference() and span every puzzle and trials 0..11", () => {
+  it("match inputs() and reference() and span every puzzle and trials 0..17", () => {
     for (const row of fx.vectors) {
       const xs = inputs(row.puzzleId, row.seed, row.trial);
       expect(row.inputs).toEqual(xs);
@@ -103,7 +105,7 @@ describe("diff fixtures: input/reference vectors", () => {
     }
     for (let id = 0; id < PUZZLE_COUNT; id++) {
       const trials = new Set(fx.vectors.filter((r) => r.puzzleId === id).map((r) => r.trial));
-      expect([...trials].sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+      expect([...trials].sort((a, b) => a - b)).toEqual(Array.from({ length: 18 }, (_, trial) => trial));
     }
   });
 });
@@ -123,10 +125,24 @@ describe("generation", () => {
   });
 });
 
+describe("cheats.json", () => {
+  it("holds each wrong program as hex, keyed by its name", () => {
+    const cheats = generateCheatFixtures();
+    const wanted = generateCheats();
+    expect(Object.keys(cheats)).toEqual(wanted.map((c) => c.name));
+    for (const c of wanted) expect(cheats[c.name]).toBe(`0x${Buffer.from(assemble(c.source)).toString("hex")}`);
+  });
+});
+
 describe("committed fixture files are up to date (run `pnpm gen:fixtures`)", () => {
   it("diff.json", () => {
     const onDisk = readFileSync(new URL("diff.json", fixturesDir), "utf8");
     expect(onDisk).toBe(`${JSON.stringify(fx)}\n`);
+  });
+
+  it("cheats.json", () => {
+    const onDisk = readFileSync(new URL("cheats.json", fixturesDir), "utf8");
+    expect(onDisk).toBe(`${JSON.stringify(generateCheatFixtures(), null, 2)}\n`);
   });
 
   it("solutions.json", () => {

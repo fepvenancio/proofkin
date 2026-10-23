@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { inputCount, inputs, outputCount, PUZZLE_COUNT, PUZZLE_NAMES, reference } from "@proofkin/vm";
+import { fixedTrials, inputCount, inputs, outputCount, PUZZLE_COUNT, PUZZLE_NAMES, reference } from "@proofkin/vm";
 import { describe, expect, it } from "vitest";
 import { GRID_EDGES, gridDiagramSvg, PUZZLE_HUES, PUZZLE_INFO } from "../src/puzzleInfo.ts";
 
@@ -44,13 +44,53 @@ describe("puzzle descriptions match the VM's puzzles", () => {
     }
   });
 
-  it("describes what a solution has to do, and the two fixed edge cases", () => {
+  it("describes what a solution has to do, and every fixed edge case", () => {
     for (const p of PUZZLE_INFO) {
       expect(p.summary.length, p.name).toBeGreaterThan(20);
       expect(p.rule.length, p.name).toBeGreaterThan(10);
-      expect(p.edgeCases[0].length).toBeGreaterThan(5);
-      expect(p.edgeCases[1].length).toBeGreaterThan(5);
+      // one line per fixed trial, in trial order: 0, 1, then 10 and up
+      expect(p.edgeCases, p.name).toHaveLength(fixedTrials(p.id).length);
+      for (const text of p.edgeCases) expect(text.length, p.name).toBeGreaterThan(5);
     }
+  });
+
+  it("GRID_PATH: each further case names the path that is cheapest in it", () => {
+    const paths = ["RRDD", "RDRD", "RDDR", "DRRD", "DRDR", "DDRR"];
+    const edgesOf = (moves: string) => {
+      let row = 0;
+      let col = 0;
+      return [...moves].map((m) => (m === "R" ? 2 * row + col++ : 6 + 3 * row++ + col));
+    };
+    paths.forEach((moves, k) => {
+      const x = inputs(GRID_PATH, "0x01", 10 + k);
+      const costs = paths.map((p) => edgesOf(p).reduce((sum, e) => sum + x[e]!, 0));
+      const cheapest = paths[costs.indexOf(Math.min(...costs))]!;
+      const words = [...cheapest].map((m) => (m === "R" ? "right" : "down")).join(", ");
+      expect(PUZZLE_INFO[GRID_PATH]!.edgeCases[2 + k], moves).toContain(words);
+    });
+  });
+
+  it("KNAPSACK3: each further case names the item or pair that is best in it", () => {
+    const wanted = ["item 0", "item 1", "item 2", "items 0 and 1", "items 0 and 2", "items 1 and 2"];
+    wanted.forEach((words, k) => {
+      const x = inputs(4, "0x01", 10 + k);
+      let best = -1;
+      let bestMask = 0;
+      for (let mask = 1; mask < 8; mask++) {
+        let weight = 0;
+        let value = 0;
+        for (let i = 0; i < 3; i++) {
+          if (mask & (1 << i)) {
+            weight += x[2 * i]!;
+            value += x[2 * i + 1]!;
+          }
+        }
+        if (weight <= x[6]! && value > best) [best, bestMask] = [value, mask];
+      }
+      const named = [0, 1, 2].filter((i) => bestMask & (1 << i));
+      expect(words, `trial ${10 + k}`).toBe(named.length === 1 ? `item ${named[0]}` : `items ${named.join(" and ")}`);
+      expect(PUZZLE_INFO[4]!.edgeCases[2 + k], words).toContain(words);
+    });
   });
 });
 

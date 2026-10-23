@@ -269,6 +269,11 @@ h2 {
   margin: 0;
 }
 
+.facts .cases {
+  margin: 4px 0 0;
+  padding-left: 1.3em;
+}
+
 .slots {
   display: flex;
   flex-wrap: wrap;

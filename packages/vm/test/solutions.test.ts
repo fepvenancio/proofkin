@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { assemble } from "../src/asm.ts";
-import { inputs, PUZZLE_NAMES, reference, TRIALS } from "../src/puzzles.ts";
+import { inputs, PUZZLE_NAMES, reference, trialCount } from "../src/puzzles.ts";
 import { run, validate } from "../src/vm.ts";
 
 const SEEDS = 1000;
@@ -13,7 +13,7 @@ const seedOf = (i: number) => `0x${i.toString(16).padStart(64, "0")}` as const;
 /** First (seed, trial) the program gets wrong, or undefined if it solves them all. */
 function firstFailure(puzzleId: number, program: Uint8Array) {
   for (let s = 0; s < SEEDS; s++) {
-    for (let trial = 0; trial < TRIALS; trial++) {
+    for (let trial = 0; trial < trialCount(puzzleId); trial++) {
       const xs = inputs(puzzleId, seedOf(s), trial);
       const got = run(program, xs);
       const want = reference(puzzleId, xs);
@@ -32,7 +32,7 @@ describe.each(PUZZLE_NAMES.map((name, id) => [id, name] as const))("solution for
     expect(program[2]).toBeLessThan(64);
   });
 
-  it(`solves all ${TRIALS} trials on ${SEEDS} seeds`, () => {
+  it(`solves every trial (${trialCount(id)}) on ${SEEDS} seeds`, () => {
     expect(firstFailure(id, program)).toBeUndefined();
   });
 });

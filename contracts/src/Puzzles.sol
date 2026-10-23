@@ -23,7 +23,9 @@ library Puzzles {
     error BadInputLength();
 
     uint256 internal constant PUZZLE_COUNT = 6;
-    /// @dev Trials 0 and 1 are fixed edge cases; trials 2..9 are seeded-random.
+    /// @dev Trials 0 and 1 are fixed edge cases; trials 2..9 are seeded-random. GRID_PATH, KNAPSACK3
+    ///      and SORT8 have further fixed trials from here on (see `trialCount`); past a puzzle's own,
+    ///      trials are random again.
     uint256 internal constant TRIALS = 10;
 
     uint256 internal constant QUORUM7 = 0;
@@ -32,6 +34,14 @@ library Puzzles {
     uint256 internal constant GRID_PATH = 3;
     uint256 internal constant KNAPSACK3 = 4;
     uint256 internal constant FAIR_SPLIT4 = 5;
+
+    /// @notice How many trials a solution has to pass: `TRIALS`, plus the puzzle's further fixed cases.
+    function trialCount(uint256 id) internal pure returns (uint256) {
+        if (id == GRID_PATH || id == KNAPSACK3) return TRIALS + 6;
+        if (id == SORT8) return TRIALS + 2;
+        if (id < PUZZLE_COUNT) return TRIALS;
+        revert UnknownPuzzle(id);
+    }
 
     function inputCount(uint256 id) internal pure returns (uint256) {
         if (id == QUORUM7) return 8;
@@ -51,7 +61,8 @@ library Puzzles {
     }
 
     /// @notice Inputs for one trial of a puzzle.
-    /// @dev Trials 0 and 1 are fixed per puzzle and ignore `seed`. Every other trial is
+    /// @dev Trials 0 and 1, and the puzzle's further fixed trials (`TRIALS` up to `trialCount(id)`),
+    ///      ignore `seed`. Every other trial is
     ///      `lo + uint256(keccak256(abi.encode(seed, trial, i))) % (hi - lo + 1)` for input `i`.
     function inputs(uint256 id, bytes32 seed, uint256 trial)
         internal
@@ -59,7 +70,7 @@ library Puzzles {
         returns (uint256[] memory x)
     {
         x = new uint256[](inputCount(id));
-        if (trial < 2) {
+        if (trial < 2 || (trial >= TRIALS && trial < trialCount(id))) {
             _fixed(id, trial, x);
             return x;
         }
@@ -110,16 +121,19 @@ library Puzzles {
         return i == 0 ? (1, 4000) : (1, 1000); // FAIR_SPLIT4
     }
 
-    /// @dev Fills `x` with the edge-case inputs of trial 0 or 1.
+    /// @dev Fills `x` with the fixed inputs of trial 0 or 1, or of a further fixed trial.
     function _fixed(uint256 id, uint256 trial, uint256[] memory x) private pure {
+        if (trial >= TRIALS) return _further(id, trial - TRIALS, x);
         bool first = trial == 0;
         uint256 n = x.length;
         if (id == QUORUM7) {
-            // all votes 0 with t = 7, then all votes 1 with t = 1
+            // Both sit exactly on the threshold, one from each side: every vote 0 with t = 1 (sum is
+            // t - 1), then every vote 1 with t = 7 (sum is t). Ignoring a voter, or comparing with `>`
+            // or `t - 1`, gets one of them wrong.
             for (uint256 i; i < 7; ++i) {
                 x[i] = trial;
             }
-            x[7] = first ? 7 : 1;
+            x[7] = first ? 1 : 7;
         } else if (id == MEDIAN5) {
             // all equal, then strictly descending
             for (uint256 i; i < n; ++i) {
@@ -147,6 +161,41 @@ library Puzzles {
             } else {
                 (x[0], x[1], x[2], x[3], x[4]) = (3999, 1000, 1000, 1000, 1000);
             }
+        }
+    }
+
+    /// @dev Further fixed case `k`, which is trial `TRIALS + k`.
+    ///      GRID_PATH: the k-th monotone path (RRDD, RDRD, RDDR, DRRD, DRDR, DDRR) is the single
+    ///      cheapest: its four edges weigh 1, 2, 3, 4 in the order travelled, every other edge 15.
+    ///      KNAPSACK3: all weights 10. Cases 0..2 have item k alone as the unique best set at cap 10
+    ///      (worth 50 against 20 and 30), cases 3..5 have the pair {0,1}, {0,2}, {1,2} as the unique
+    ///      best set at cap 20 (30 each against 10). Either way the best set weighs exactly the cap.
+    ///      SORT8: two permutations that, with trials 0 and 1, expose the removal of any one comparator
+    ///      from the usual 19-comparator network.
+    function _further(uint256 id, uint256 k, uint256[] memory x) private pure {
+        if (id == GRID_PATH) {
+            for (uint256 i; i < 12; ++i) {
+                x[i] = 15;
+            }
+            // Edge numbers along each path, four per path, in the order travelled.
+            bytes memory edges = hex"0001080b" hex"0007030b" hex"00070a05" hex"0602030b"
+                hex"06020a05" hex"06090405";
+            for (uint256 step; step < 4; ++step) {
+                x[uint8(edges[4 * k + step])] = step + 1;
+            }
+            return;
+        }
+        bytes memory rows;
+        if (id == KNAPSACK3) {
+            // w0 v0 w1 v1 w2 v2 cap, one row per case
+            rows = hex"0a320a140a1e0a" hex"0a140a320a1e0a" hex"0a140a1e0a320a" hex"0a1e0a1e0a0a14"
+                hex"0a1e0a0a0a1e14" hex"0a0a0a1e0a1e14";
+        } else {
+            rows = hex"004060a020c080e0" // SORT8
+                hex"006020a04080c0e0";
+        }
+        for (uint256 i; i < x.length; ++i) {
+            x[i] = uint8(rows[k * x.length + i]);
         }
     }
 

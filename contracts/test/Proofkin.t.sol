@@ -50,14 +50,15 @@ contract ProofkinTest is ProofkinBase {
         return keccak256(abi.encode(blockhash(commitBlock + REVEAL_DELAY), h));
     }
 
-    /// @dev First trial the program gets wrong on `seed`, or `Puzzles.TRIALS` if it solves them all.
+    /// @dev First trial the program gets wrong on `seed`, or the puzzle's `trialCount` if it solves them all.
     function _firstFailingTrial(bytes memory program, bytes32 seed)
         private
         pure
         returns (uint256 trial)
     {
         uint256 puzzleId = uint8(program[1]);
-        for (; trial < Puzzles.TRIALS; ++trial) {
+        uint256 count = Puzzles.trialCount(puzzleId);
+        for (; trial < count; ++trial) {
             uint256[] memory x = Puzzles.inputs(puzzleId, seed, trial);
             (bool ok, uint256[] memory out,) = VM.run(program, x);
             if (
@@ -399,7 +400,8 @@ contract ProofkinTest is ProofkinBase {
     }
 
     /// GRID_PATH with its first MIN turned into MAX gives the same answer when every edge weighs the
-    /// same, which is exactly what both fixed trials do, so only a random trial can catch it.
+    /// same, which is exactly what trials 0 and 1 do, so only a later trial can catch it: here the
+    /// first random one (the further fixed trials, 10 and up, would catch it too).
     function test_aProgramThatPassesBothEdgeCasesIsStillCaughtByARandomTrial() public {
         bytes memory p = _solution("GRID_PATH");
         p[_firstNode(p, uint8(Prog.MIN))] = bytes1(Prog.MAX);
@@ -416,7 +418,7 @@ contract ProofkinTest is ProofkinBase {
     }
 
     /// A constant 0 matches QUORUM7 whenever the quorum is not reached, including the first edge case,
-    /// but trial 1 (every vote in, threshold 1) wants 1. Outputs that are too SMALL must fail too.
+    /// but trial 1 (every vote in, threshold 7) wants 1. Outputs that are too SMALL must fail too.
     function test_aProgramThatUnderstatesTheAnswerIsRejected() public {
         bytes memory p = Prog.build(Prog.QUORUM7, Prog.konst(0), Prog.out(0));
         VM.validate(p);
@@ -506,8 +508,41 @@ contract ProofkinTest is ProofkinBase {
         for (uint256 k; k < 6; ++k) {
             uint256 id = _mintAs(alice, _solution(names[k]));
             IProofkin.Token memory t = _token(id);
-            assertEq(_firstFailingTrial(SSTORE2.read(t.program), t.seed), Puzzles.TRIALS, names[k]);
+            assertEq(
+                _firstFailingTrial(SSTORE2.read(t.program), t.seed),
+                Puzzles.trialCount(t.puzzleId),
+                names[k]
+            );
         }
+    }
+
+    /// A token is two storage slots: the seed alone, then the program pointer with the small fields. It
+    /// was three, because the 20-byte pointer came first and the 32-byte seed cannot share a slot with it.
+    function test_aTokenFillsExactlyTwoStorageSlots() public {
+        uint256 id = _mintAs(alice, _solution("MEDIAN5"));
+        IProofkin.Token memory t = _token(id);
+
+        vm.record();
+        proofkin.tokens(id);
+        (bytes32[] memory reads,) = vm.accesses(address(proofkin));
+
+        bytes32[] memory slots = new bytes32[](reads.length);
+        uint256 distinct;
+        for (uint256 i; i < reads.length; ++i) {
+            bool known;
+            for (uint256 j; j < distinct; ++j) {
+                if (slots[j] == reads[i]) known = true;
+            }
+            if (!known) slots[distinct++] = reads[i];
+        }
+        assertEq(distinct, 2, "the getter touches two slots");
+        assertEq(uint256(slots[1]), uint256(slots[0]) + 1, "next to each other");
+        assertEq(vm.load(address(proofkin), slots[0]), t.seed, "the seed alone fills the first");
+        assertEq(
+            address(uint160(uint256(vm.load(address(proofkin), slots[1])))),
+            t.program,
+            "the pointer sits in the low bytes of the second"
+        );
     }
 
     function test_revealMintsToTheCallerAndClearsTheCommit() public {

@@ -113,7 +113,7 @@ contract ProofkinInvariantTest is ProofkinBase {
     }
 
     function _assertSolvesOnItsSeed(bytes memory program, IProofkin.Token memory t) private pure {
-        for (uint256 trial; trial < Puzzles.TRIALS; ++trial) {
+        for (uint256 trial; trial < Puzzles.trialCount(t.puzzleId); ++trial) {
             uint256[] memory x = Puzzles.inputs(t.puzzleId, t.seed, trial);
             (bool ok, uint256[] memory got,) = VM.run(program, x);
             assertTrue(ok, "no arithmetic failure on the stored seed");

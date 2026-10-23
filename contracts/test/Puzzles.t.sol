@@ -29,6 +29,10 @@ contract PuzzlesHarness {
     {
         return Puzzles.referenceOutputs(id, x);
     }
+
+    function trialCount(uint256 id) external pure returns (uint256) {
+        return Puzzles.trialCount(id);
+    }
 }
 
 contract PuzzlesTest is Test {
@@ -94,6 +98,8 @@ contract PuzzlesTest is Test {
         h.inputs(6, SEED_1, 0);
         vm.expectRevert(err);
         h.referenceOutputs(6, new uint256[](0));
+        vm.expectRevert(err);
+        h.trialCount(6);
     }
 
     function test_referenceRejectsWrongInputLength() public {
@@ -115,8 +121,9 @@ contract PuzzlesTest is Test {
     }
 
     function test_fixedTrials_quorum7() public view {
-        _expectFixed(QUORUM7, 0, _arr(_seq7(0, 7)), _list(0));
-        _expectFixed(QUORUM7, 1, _arr(_seq7(1, 1)), _list(1));
+        // sum == t - 1 (answer 0), then sum == t (answer 1)
+        _expectFixed(QUORUM7, 0, _arr(_seq7(0, 1)), _list(0));
+        _expectFixed(QUORUM7, 1, _arr(_seq7(1, 7)), _list(1));
     }
 
     function _seq7(uint256 vote, uint256 t) private pure returns (uint256[] memory x) {
@@ -223,6 +230,127 @@ contract PuzzlesTest is Test {
         assertEq(base, _u(h.inputs(SORT8, SEED_1, 3)));
         assertTrue(keccak256(base) != keccak256(_u(h.inputs(SORT8, SEED_1, 4))));
         assertTrue(keccak256(base) != keccak256(_u(h.inputs(SORT8, SEED_2, 3))));
+    }
+
+    // ------------------------------------------- further fixed trials 10 and up
+
+    function test_trialCount() public view {
+        uint8[6] memory want = [10, 10, 12, 16, 16, 10];
+        for (uint256 id; id < 6; ++id) {
+            assertEq(h.trialCount(id), want[id], "trialCount");
+        }
+        assertEq(Puzzles.TRIALS, 10);
+    }
+
+    function testFuzz_furtherFixedTrialsIgnoreTheSeed(bytes32 seed) public view {
+        for (uint256 id; id < 6; ++id) {
+            for (uint256 trial = Puzzles.TRIALS; trial < h.trialCount(id); ++trial) {
+                assertEq(_u(h.inputs(id, seed, trial)), _u(h.inputs(id, SEED_1, trial)), "fixed");
+            }
+        }
+    }
+
+    /// A trial past the end of a puzzle's list is a random one, as before there was a list.
+    function test_fromTheTrialCountOnTheTrialsAreRandomAgain() public view {
+        for (uint256 id; id < 6; ++id) {
+            for (uint256 trial = h.trialCount(id); trial < h.trialCount(id) + 2; ++trial) {
+                assertTrue(
+                    keccak256(_u(h.inputs(id, SEED_1, trial)))
+                        != keccak256(_u(h.inputs(id, SEED_2, trial))),
+                    "random"
+                );
+            }
+        }
+    }
+
+    /// @dev Cost of the path `moves` (R right, D down) from the top-left node: the sum of its four edge
+    ///      weights, numbered as in the §4 edge order.
+    function _pathCost(uint256[] memory x, bytes memory moves) private pure returns (uint256 cost) {
+        uint256 row;
+        uint256 col;
+        for (uint256 i; i < moves.length; ++i) {
+            if (moves[i] == "R") {
+                cost += x[2 * row + col];
+                ++col;
+            } else {
+                cost += x[6 + 3 * row + col];
+                ++row;
+            }
+        }
+    }
+
+    function test_gridPath_furtherTrialsMakeEachPathTheSingleCheapestInTurn() public view {
+        string[6] memory paths = ["RRDD", "RDRD", "RDDR", "DRRD", "DRDR", "DDRR"];
+        for (uint256 k; k < 6; ++k) {
+            uint256[] memory x = h.inputs(GRID_PATH, SEED_1, 10 + k);
+            uint256 cheapest = type(uint256).max;
+            uint256 winners;
+            uint256 winner;
+            for (uint256 j; j < 6; ++j) {
+                uint256 cost = _pathCost(x, bytes(paths[j]));
+                if (cost < cheapest) {
+                    (cheapest, winners, winner) = (cost, 1, j);
+                } else if (cost == cheapest) {
+                    ++winners;
+                }
+            }
+            assertEq(winners, 1, paths[k]);
+            assertEq(winner, k, paths[k]);
+            assertEq(cheapest, 1 + 2 + 3 + 4, paths[k]);
+            assertEq(h.referenceOutputs(GRID_PATH, x)[0], cheapest, paths[k]);
+        }
+    }
+
+    function test_knapsack3_furtherTrialsMakeEachSingleThenEachPairTheUniqueBestAtTheCap()
+        public
+        view
+    {
+        uint8[6] memory wanted = [1, 2, 4, 3, 5, 6]; // bit masks over the three items
+        for (uint256 k; k < 6; ++k) {
+            uint256[] memory x = h.inputs(KNAPSACK3, SEED_1, 10 + k);
+            uint256 best;
+            uint256 winners;
+            uint256 winner;
+            uint256 winnerWeight;
+            for (uint256 m; m < 8; ++m) {
+                uint256 weight;
+                uint256 value;
+                for (uint256 i; i < 3; ++i) {
+                    if (m & (1 << i) != 0) {
+                        weight += x[2 * i];
+                        value += x[2 * i + 1];
+                    }
+                }
+                if (weight > x[6]) continue;
+                if (winners == 0 || value > best) {
+                    (best, winners, winner, winnerWeight) = (value, 1, m, weight);
+                } else if (value == best) {
+                    ++winners;
+                }
+            }
+            assertEq(winners, 1, "a single best set");
+            assertEq(winner, wanted[k], "the intended set");
+            assertEq(winnerWeight, x[6], "weighing exactly the cap");
+            assertEq(h.referenceOutputs(KNAPSACK3, x)[0], best);
+        }
+    }
+
+    function test_sort8_furtherTrialsArePermutationsOfEightDistinctValues() public view {
+        for (uint256 trial = 10; trial < 12; ++trial) {
+            uint256[] memory x = h.inputs(SORT8, SEED_1, trial);
+            uint256 seen;
+            for (uint256 i; i < 8; ++i) {
+                assertEq(x[i] % 32, 0);
+                seen |= 1 << (x[i] / 32);
+            }
+            assertEq(seen, 0xFF, "every multiple of 32 up to 224 exactly once");
+        }
+        assertTrue(
+            keccak256(_u(h.inputs(SORT8, SEED_1, 10))) != keccak256(_u(h.inputs(SORT8, SEED_1, 11)))
+        );
+        assertTrue(
+            keccak256(_u(h.inputs(SORT8, SEED_1, 10))) != keccak256(_u(h.inputs(SORT8, SEED_1, 1)))
+        );
     }
 
     function testFuzz_inputsStayInRange(uint8 idSeed, bytes32 seed, uint8 trial) public view {

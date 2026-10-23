@@ -1,4 +1,5 @@
 // Small display helpers.
+import { fixedTrials } from "@proofkin/vm";
 import { formatEther } from "viem";
 import { SLOTS_PER_PUZZLE } from "./chain.ts";
 import { PUZZLE_INFO } from "./puzzleInfo.ts";
@@ -22,9 +23,12 @@ export function labelledInputs(puzzleId: number, inputs: number[]): { label: str
   return inputs.map((value, i) => ({ label: slots[i]?.label ?? `input ${i}`, value }));
 }
 
-/** "the first edge case: …" for trials 0 and 1, "random case n" after that. */
+const ORDINALS = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth"];
+
+/** "the third edge case: …" for each of the puzzle's fixed trials, "random case n" for the rest. */
 export function describeTrial(puzzleId: number, trial: number): string {
-  if (trial === 0) return `the first edge case: ${PUZZLE_INFO[puzzleId]!.edgeCases[0]}`;
-  if (trial === 1) return `the second edge case: ${PUZZLE_INFO[puzzleId]!.edgeCases[1]}`;
-  return `random case ${trial - 1}`;
+  const fixed = fixedTrials(puzzleId);
+  const k = fixed.indexOf(trial);
+  if (k >= 0) return `the ${ORDINALS[k]!} edge case: ${PUZZLE_INFO[puzzleId]!.edgeCases[k]}`;
+  return `random case ${trial - fixed.filter((f) => f < trial).length + 1}`;
 }

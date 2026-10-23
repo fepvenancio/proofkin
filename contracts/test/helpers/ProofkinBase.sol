@@ -35,7 +35,7 @@ abstract contract ProofkinBase is Test {
     }
 
     function _token(uint256 id) internal view returns (IProofkin.Token memory t) {
-        (t.program, t.seed, t.puzzleId, t.nodeCount, t.depth, t.rank, t.recordAtMint) =
+        (t.seed, t.program, t.puzzleId, t.nodeCount, t.depth, t.rank, t.recordAtMint) =
             proofkin.tokens(id);
     }
 

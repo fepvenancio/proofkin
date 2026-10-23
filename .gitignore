@@ -32,5 +32,6 @@ dist/
 CLAUDE.md
 AGENTS.md
 GEMINI.md
+.trigrep/
 
 .DS_Store

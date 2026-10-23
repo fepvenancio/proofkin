@@ -16,8 +16,8 @@ export interface PuzzleInfo {
   outputs: string[];
   /** The reference answer, in words. */
   rule: string;
-  /** What trials 0 and 1 feed every program, whatever the seed. */
-  edgeCases: [string, string];
+  /** What the fixed trials feed every program, whatever the seed: trials 0 and 1, then 10 and up if the puzzle has more. */
+  edgeCases: string[];
 }
 
 const slots = (prefix: string, n: number, lo: number, hi: number): InputSlot[] =>
@@ -31,7 +31,7 @@ export const PUZZLE_INFO: readonly PuzzleInfo[] = [
     inputs: [...slots("vote", 7, 0, 1), { label: "t", lo: 1, hi: 7 }],
     outputs: ["quorum reached (1) or not (0)"],
     rule: "1 if the votes add up to at least t, otherwise 0.",
-    edgeCases: ["all seven votes 0, with t = 7", "all seven votes 1, with t = 1"],
+    edgeCases: ["all seven votes 0, with t = 1", "all seven votes 1, with t = 7"],
   },
   {
     id: 1,
@@ -49,7 +49,12 @@ export const PUZZLE_INFO: readonly PuzzleInfo[] = [
     inputs: slots("x", 8, 0, 255),
     outputs: Array.from({ length: 8 }, (_, i) => `${i === 0 ? "smallest" : i === 7 ? "largest" : `#${i + 1} smallest`}`),
     rule: "The eight values in ascending order, one per output slot.",
-    edgeCases: ["all eight values equal (128)", "strictly descending: 224, 192, … 32, 0"],
+    edgeCases: [
+      "all eight values equal (128)",
+      "strictly descending: 224, 192, … 32, 0",
+      "a shuffled order: 0, 64, 96, 160, 32, 192, 128, 224",
+      "another shuffled order: 0, 96, 32, 160, 64, 128, 192, 224",
+    ],
   },
   {
     id: 3,
@@ -58,7 +63,14 @@ export const PUZZLE_INFO: readonly PuzzleInfo[] = [
     inputs: Array.from({ length: 12 }, (_, i) => ({ label: `edge ${i}`, lo: 0, hi: 15 })),
     outputs: ["cost of the cheapest path from top-left to bottom-right"],
     rule: "The minimum, over all right/down paths from the top-left node to the bottom-right node, of the sum of the edge costs on the path.",
-    edgeCases: ["every edge costs 0", "every edge costs 15"],
+    edgeCases: [
+      "every edge costs 0",
+      "every edge costs 15",
+      ...["RRDD", "RDRD", "RDDR", "DRRD", "DRDR", "DDRR"].map((moves) => {
+        const words = [...moves].map((m) => (m === "R" ? "right" : "down")).join(", ");
+        return `the cheapest path is ${words}: its edges cost 1, 2, 3, 4 and every other edge 15`;
+      }),
+    ],
   },
   {
     id: 4,
@@ -75,7 +87,12 @@ export const PUZZLE_INFO: readonly PuzzleInfo[] = [
     ],
     outputs: ["best total value"],
     rule: "The largest total value over all subsets of the three items whose total weight is at most cap (the empty subset is worth 0).",
-    edgeCases: ["every weight above the capacity", "every weight 1, capacity 40"],
+    edgeCases: [
+      "every weight above the capacity",
+      "every weight 1, capacity 40",
+      ...[0, 1, 2].map((i) => `item ${i} alone is the best set: all weights 10, capacity 10, and it is worth 50 against 20 and 30`),
+      ...["0 and 1", "0 and 2", "1 and 2"].map((pair) => `items ${pair} are the best pair: all weights 10, capacity 20, and each is worth 30 against 10`),
+    ],
   },
   {
     id: 5,

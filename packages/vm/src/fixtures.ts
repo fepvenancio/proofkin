@@ -3,6 +3,7 @@
 import { readFileSync } from "node:fs";
 import { bytesToHex, type Hex } from "viem";
 import { assemble } from "./asm.ts";
+import { generateCheats } from "./cheats.ts";
 import { inputCount, inputs, outputCount, PUZZLE_COUNT, PUZZLE_NAMES, reference } from "./puzzles.ts";
 import { makeRng, type Rng } from "./rng.ts";
 import { type ErrorName, MAX_NODES, Op, run, validate } from "./vm.ts";
@@ -10,7 +11,7 @@ import { type ErrorName, MAX_NODES, Op, run, validate } from "./vm.ts";
 export const PROGRAM_COUNT = 2000;
 export const INVALID_COUNT = 500;
 const SEEDS_PER_PUZZLE = 24;
-const TRIALS_PER_SEED = 12; // trials 0..11
+const TRIALS_PER_SEED = 18; // trials 0..17: every trial any puzzle has (up to 15), and two past the end, which are random again
 const RNG_SEED = 0x50524b4e;
 
 /** Keys are alphabetical: Foundry maps JSON objects onto Solidity structs in that order. */
@@ -300,6 +301,11 @@ function vectorRows(rng: Rng): VectorRow[] {
 export function generateDiffFixtures(): DiffFixtures {
   const rng = makeRng(RNG_SEED);
   return { invalid: invalidRows(rng), valid: validRows(rng), vectors: vectorRows(rng) };
+}
+
+/** The wrong programs of src/cheats.ts, assembled, as hex keyed by their names. */
+export function generateCheatFixtures(): Record<string, Hex> {
+  return Object.fromEntries(generateCheats().map((c) => [c.name, bytesToHex(assemble(c.source))]));
 }
 
 /** The hand-written solutions in fixtures/solutions/*.pk, assembled, as hex keyed by puzzle name. */

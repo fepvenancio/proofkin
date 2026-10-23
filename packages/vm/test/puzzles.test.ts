@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { inputCount, inputs, outputCount, PUZZLE_COUNT, reference } from "../src/puzzles.ts";
+import { GRID_PATHS, gridEdges } from "../src/cheats.ts";
+import { fixedTrials, inputCount, inputs, outputCount, PUZZLE_COUNT, reference, TRIALS, trialCount } from "../src/puzzles.ts";
 
 const SEED_1 = "0x0000000000000000000000000000000000000000000000000000000000000001";
 const SEED_2 = "0x00000000000000000000000000000000000000000000000000000000deadbeef";
@@ -49,8 +50,9 @@ describe("puzzle shapes (§4 table)", () => {
 describe("fixed edge-case trials 0 and 1 (§4.1)", () => {
   // Seed must not matter for trials 0 and 1.
   const fixed: [number, number, number[], number[]][] = [
-    [QUORUM7, 0, [0, 0, 0, 0, 0, 0, 0, 7], [0]],
-    [QUORUM7, 1, [1, 1, 1, 1, 1, 1, 1, 1], [1]],
+    // both sit exactly on the threshold: sum == t - 1 (answer 0), then sum == t (answer 1)
+    [QUORUM7, 0, [0, 0, 0, 0, 0, 0, 0, 1], [0]],
+    [QUORUM7, 1, [1, 1, 1, 1, 1, 1, 1, 7], [1]],
     [MEDIAN5, 0, [128, 128, 128, 128, 128], [128]],
     [MEDIAN5, 1, [200, 150, 100, 50, 0], [100]],
     [SORT8, 0, Array(8).fill(128), Array(8).fill(128)],
@@ -67,6 +69,84 @@ describe("fixed edge-case trials 0 and 1 (§4.1)", () => {
     expect(inputs(id, SEED_1, trial)).toEqual(expectedInputs);
     expect(inputs(id, SEED_2, trial)).toEqual(expectedInputs);
     expect(reference(id, expectedInputs)).toEqual(expectedOutputs);
+  });
+});
+
+describe("further fixed trials 10 and up (§4.1)", () => {
+  const allIds = Array.from({ length: PUZZLE_COUNT }, (_, id) => id);
+
+  it("gives each puzzle its trial count", () => {
+    expect(TRIALS).toBe(10);
+    expect(allIds.map(trialCount)).toEqual([10, 10, 12, 16, 16, 10]);
+  });
+
+  it("lists the trials whose inputs ignore the seed", () => {
+    expect(fixedTrials(QUORUM7)).toEqual([0, 1]);
+    expect(fixedTrials(MEDIAN5)).toEqual([0, 1]);
+    expect(fixedTrials(SORT8)).toEqual([0, 1, 10, 11]);
+    expect(fixedTrials(GRID_PATH)).toEqual([0, 1, 10, 11, 12, 13, 14, 15]);
+    expect(fixedTrials(KNAPSACK3)).toEqual([0, 1, 10, 11, 12, 13, 14, 15]);
+    expect(fixedTrials(FAIR_SPLIT4)).toEqual([0, 1]);
+  });
+
+  it("ignores the seed in every fixed trial", () => {
+    for (const id of allIds) {
+      for (const trial of fixedTrials(id)) expect(inputs(id, SEED_1, trial)).toEqual(inputs(id, SEED_2, trial));
+    }
+  });
+
+  it("is random again from the trial count on, for every puzzle", () => {
+    for (const id of allIds) {
+      for (const trial of [trialCount(id), trialCount(id) + 1]) {
+        expect(inputs(id, SEED_1, trial)).not.toEqual(inputs(id, SEED_2, trial));
+      }
+    }
+  });
+
+  it("GRID_PATH: trials 10..15 make each path in turn the single cheapest", () => {
+    GRID_PATHS.forEach((moves, k) => {
+      const x = inputs(GRID_PATH, SEED_1, 10 + k);
+      const costs = GRID_PATHS.map((m) => gridEdges(m).reduce((sum, e) => sum + x[e]!, 0));
+      const cheapest = Math.min(...costs);
+      expect(costs.filter((c) => c === cheapest), moves).toHaveLength(1);
+      expect(costs[k], moves).toBe(cheapest);
+      expect(gridEdges(moves).map((e) => x[e]), moves).toEqual([1, 2, 3, 4]);
+      expect(x.filter((w) => w === 15), moves).toHaveLength(8);
+      expect(reference(GRID_PATH, x)).toEqual([10]);
+    });
+  });
+
+  it("KNAPSACK3: trials 10..15 make each single item, then each pair, the unique best set at exactly the cap", () => {
+    const wanted = [0b001, 0b010, 0b100, 0b011, 0b101, 0b110];
+    wanted.forEach((mask, k) => {
+      const x = inputs(KNAPSACK3, SEED_1, 10 + k);
+      const cap = x[6]!;
+      const sets = Array.from({ length: 8 }, (_, m) => {
+        let weight = 0;
+        let value = 0;
+        for (let i = 0; i < 3; i++) {
+          if (m & (1 << i)) {
+            weight += x[2 * i]!;
+            value += x[2 * i + 1]!;
+          }
+        }
+        return { mask: m, weight, value };
+      }).filter((s) => s.weight <= cap);
+      const best = Math.max(...sets.map((s) => s.value));
+      const winners = sets.filter((s) => s.value === best);
+      expect(winners.map((s) => s.mask)).toEqual([mask]);
+      expect(winners[0]!.weight).toBe(cap);
+      expect(reference(KNAPSACK3, x)).toEqual([best]);
+    });
+  });
+
+  it("SORT8: trials 10 and 11 are permutations of eight distinct values, and not the descending case", () => {
+    const sorted = [0, 32, 64, 96, 128, 160, 192, 224];
+    for (const trial of [10, 11]) {
+      expect([...inputs(SORT8, SEED_1, trial)].sort((a, b) => a - b)).toEqual(sorted);
+    }
+    expect(inputs(SORT8, SEED_1, 10)).not.toEqual(inputs(SORT8, SEED_1, 11));
+    expect(inputs(SORT8, SEED_1, 10)).not.toEqual(inputs(SORT8, SEED_1, 1));
   });
 });
 
@@ -91,7 +171,7 @@ describe("random trials (§4.1)", () => {
       const ranges = RANGES[id]!;
       for (let s = 0; s < 40; s++) {
         const seed = `0x${s.toString(16).padStart(64, "0")}` as const;
-        for (let trial = 0; trial < 10; trial++) {
+        for (let trial = 0; trial < trialCount(id) + 2; trial++) {
           const xs = inputs(id, seed, trial);
           expect(xs).toHaveLength(ranges.length);
           xs.forEach((x, i) => {

@@ -138,7 +138,7 @@ export function mountSolve(root: HTMLElement, app: App): () => void {
         h("dt", null, "The rule"),
         h("dd", null, info.rule),
         h("dt", null, "Edge cases"),
-        h("dd", null, `Every program is tried on two fixed cases first: ${info.edgeCases[0]}; and ${info.edgeCases[1]}.`),
+        h("dd", null, "Every program is tried on these fixed cases, whatever the seed, as well as random ones:", h("ol", { class: "cases" }, ...info.edgeCases.map((c) => h("li", null, c)))),
         puzzleId === 3 ? h("dt", null, "Edge numbers") : null,
         puzzleId === 3
           ? h("dd", null, "Inputs 0 to 5 are the horizontal edges row by row, inputs 6 to 11 the vertical edges row by row.", h("div", { class: "diagram" }, trustedSvg(gridDiagramSvg())))
@@ -256,7 +256,7 @@ export function mountSolve(root: HTMLElement, app: App): () => void {
       renderMint();
     });
 
-    let body: Child = h("p", { class: "muted" }, analysis.ok ? "Runs your program on the two fixed edge cases and 100 random ones." : "Fix the program first.");
+    let body: Child = h("p", { class: "muted" }, analysis.ok ? `Runs your program on the ${PUZZLE_INFO[puzzleId]!.edgeCases.length} fixed edge cases and 100 random ones.` : "Fix the program first.");
     if (local.status === "pass" && local.report.status === "pass") {
       body = h(
         "div",

@@ -1,5 +1,7 @@
 import { readFileSync } from "node:fs";
-import { assemble, inputs, reference, run } from "@proofkin/vm";
+// The wrong GRID_PATH program comes from the vm package's own test support, which is not part of its public API.
+import { gridPathSource } from "../../vm/src/cheats.ts";
+import { assemble, fixedTrials, inputs, reference, run, trialCount } from "@proofkin/vm";
 import { describe, expect, it } from "vitest";
 import { LOCAL_RANDOM_TRIALS, randomSeed, runLocalTest } from "../src/localTest.ts";
 
@@ -10,11 +12,14 @@ const source = (name: string) => readFileSync(new URL(`../../../fixtures/solutio
 const SEED = "0x00000000000000000000000000000000000000000000000000000000000000aa" as const;
 
 describe("runLocalTest", () => {
-  it("passes every fixture solution on the 2 fixed and 100 random cases", () => {
+  it("passes every fixture solution on all of the puzzle's fixed cases and 100 random ones", () => {
     expect(LOCAL_RANDOM_TRIALS).toBe(100);
-    for (const name of ["QUORUM7", "MEDIAN5", "SORT8", "GRID_PATH", "KNAPSACK3", "FAIR_SPLIT4"]) {
-      expect(runLocalTest(solution(name), { seed: SEED }), name).toEqual({ status: "pass", seed: SEED, cases: 102 });
-    }
+    const names = ["QUORUM7", "MEDIAN5", "SORT8", "GRID_PATH", "KNAPSACK3", "FAIR_SPLIT4"];
+    names.forEach((name, id) => {
+      const cases = fixedTrials(id).length + 100;
+      expect(runLocalTest(solution(name), { seed: SEED }), name).toEqual({ status: "pass", seed: SEED, cases });
+    });
+    expect(names.map((_, id) => fixedTrials(id).length + 100)).toEqual([102, 102, 104, 108, 108, 102]);
   });
 
   it("reports the first failing case, in trial order, with what was expected and what came out", () => {
@@ -23,11 +28,11 @@ describe("runLocalTest", () => {
     const r = runLocalTest(broken, { seed: SEED });
     expect(r).toMatchObject({
       status: "fail",
-      failure: { trial: 0, kind: "wrong", inputs: [0, 0, 0, 0, 0, 0, 0, 7], expected: [0], got: [1] },
+      failure: { trial: 0, kind: "wrong", inputs: [0, 0, 0, 0, 0, 0, 0, 1], expected: [0], got: [1] },
     });
   });
 
-  it("catches a program that passes both edge cases and only fails a random one", () => {
+  it("catches a program that passes the two tie cases and only fails a later one", () => {
     // GRID_PATH with its first MIN turned into MAX: identical results while every edge weighs the same
     const text = source("GRID_PATH").replace("= MIN", "= MAX");
     const r = runLocalTest(assemble(text), { seed: SEED });
@@ -45,6 +50,25 @@ describe("runLocalTest", () => {
     expect(r.failure.inputs).toEqual(inputs(3, SEED, r.failure.trial));
     expect(r.failure.expected).toEqual(reference(3, r.failure.inputs));
     expect(r.failure.got).not.toEqual(r.failure.expected);
+  });
+
+  it("runs the further fixed cases too, so a program that only they catch cannot pass", () => {
+    // GRID_PATH that never considers the path right, right, down, down. It is right on most inputs, so for
+    // some seeds it passes all eight random trials and only the further fixed case for that path fails it.
+    const program = assemble(gridPathSource({ skip: 0 }));
+    const passesTheRandomOnes = (seed: `0x${string}`) =>
+      Array.from({ length: 8 }, (_, k) => k + 2).every((t) => {
+        const x = inputs(3, seed, t);
+        return run(program, x).outputs.join() === reference(3, x).join();
+      });
+    const seed = Array.from({ length: 300 }, (_, n) => `0x${(n + 1).toString(16).padStart(64, "0")}` as const).find(passesTheRandomOnes);
+    if (seed === undefined) throw new Error("no seed lets the wrong program through the random trials");
+
+    const r = runLocalTest(program, { seed });
+    if (r.status !== "fail") throw new Error("expected a failure");
+    expect(r.failure.trial).toBe(10); // the case in which right, right, down, down is the one cheapest path
+    expect(r.failure.expected).toEqual([10]);
+    expect(trialCount(3)).toBeGreaterThan(r.failure.trial);
   });
 
   it("reports an arithmetic failure as its own kind", () => {

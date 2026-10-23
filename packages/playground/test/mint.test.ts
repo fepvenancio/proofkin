@@ -218,15 +218,20 @@ describe("friendlyError", () => {
     expect(friendlyError(new Error("boom"))).toBe("boom");
   });
 
-  it("calls trials 0 and 1 the fixed edge cases and every later trial a random case", () => {
+  it("calls trials 0, 1 and 10 up the fixed edge cases, and trials 2 to 9 random cases", () => {
     const failedAt = (trial: bigint) =>
       new ContractFunctionRevertedError({
         abi: proofkinAbi,
         data: encodeErrorResult({ abi: proofkinAbi, errorName: "SolveFailed", args: [trial] }),
         functionName: "reveal",
       });
-    expect(friendlyError(failedAt(1n))).toMatch(/trial 1 \(one of the two fixed edge cases\)/);
+    expect(friendlyError(failedAt(0n))).toMatch(/trial 0 \(one of the fixed edge cases\)/);
+    expect(friendlyError(failedAt(1n))).toMatch(/trial 1 \(one of the fixed edge cases\)/);
     expect(friendlyError(failedAt(2n))).toMatch(/trial 2 \(one of its random cases\)/);
+    expect(friendlyError(failedAt(9n))).toMatch(/trial 9 \(one of its random cases\)/);
+    // the contract only ever reports a trial its puzzle has, so from 10 on it is one of the further fixed cases
+    expect(friendlyError(failedAt(10n))).toMatch(/trial 10 \(one of the fixed edge cases\)/);
+    expect(friendlyError(failedAt(15n))).toMatch(/trial 15 \(one of the fixed edge cases\)/);
   });
 
   it("copes with things that are not errors", () => {
