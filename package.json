@@ -8,6 +8,7 @@
     "gen:fixtures": "pnpm --filter @proofkin/vm gen:fixtures",
     "dev:chain": "pnpm --filter @proofkin/playground dev:chain",
     "dev:playground": "pnpm --filter @proofkin/playground dev",
-    "build:playground": "pnpm --filter @proofkin/playground build"
+    "build:playground": "pnpm --filter @proofkin/playground build",
+    "launch:dry-run": "pnpm --filter @proofkin/playground launch:dry-run"
   }
 }

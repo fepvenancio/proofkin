@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "gen:abi": "node scripts/gen-abi.ts",
-    "dev:chain": "node scripts/dev-chain.ts"
+    "dev:chain": "node scripts/dev-chain.ts",
+    "launch:dry-run": "node --env-file-if-exists=.env.local scripts/dry-run-cli.ts"
   },
   "dependencies": {
     "@fontsource-variable/jetbrains-mono": "^5.3.0",

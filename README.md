@@ -10,7 +10,8 @@ Working title. The specification is [PLAN.md](PLAN.md); notes on each milestone 
 fixed test cases were hardened before launch ([docs/M3.5-notes.md](docs/M3.5-notes.md), then
 [docs/M3.6-notes.md](docs/M3.6-notes.md)). The playground
 (milestone 4) works end to end against a local chain; running it on Base Sepolia waits for the deployment in
-milestone 5.
+milestone 5, which is prepared and rehearsed on a local chain ([docs/M5-notes.md](docs/M5-notes.md)): the
+deploy script and `pnpm launch:dry-run`.
 
 ## Layout
 
@@ -41,6 +42,6 @@ pnpm dev:chain          # Anvil with a block a second, both contracts deployed, 
 pnpm dev:playground     # then open http://localhost:5173
 ```
 
-More in [docs/M4-notes.md](docs/M4-notes.md).
+More in [docs/M4-notes.md](docs/M4-notes.md). Launching, and what it needs from the owner: [docs/M5-notes.md](docs/M5-notes.md).
 
 Needs Foundry and Node 22 or later.

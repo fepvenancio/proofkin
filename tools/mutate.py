@@ -7,7 +7,8 @@ reports any mutant that survives. Sources are restored afterwards, even on Ctrl-
     python3 tools/mutate.py vm         # VM.sol / Puzzles.sol, judged by the differential suite alone
     python3 tools/mutate.py renderer   # Renderer.sol, judged by its Solidity tests and the TS SVG check
     python3 tools/mutate.py proofkin   # Proofkin.sol, judged by its unit, admin and invariant tests
-    python3 tools/mutate.py playground # the playground's mint flow, phases, gate, storage, gallery decoding
+    python3 tools/mutate.py playground # the playground's mint flow, phases, gate, storage, gallery decoding, dry run
+    python3 tools/mutate.py deploy     # contracts/script/Deploy.s.sol, judged by its tests
 
 Extra arguments keep only the mutations whose label contains one of them (case-insensitive), to re-run
 a few survivors without the whole suite:
@@ -121,6 +122,28 @@ SUITES = {
             ("renderer may be zero", "contracts/src/Proofkin.sol", "        if (renderer_ == address(0)) revert InvalidRenderer();\n", ""),
         ],
     },
+    # The deploy script, judged by its tests. What no test can see is the `vm.startBroadcast()` pair: in a test it
+    # sends nothing, so deleting it changes nothing there. The local-chain rehearsal in docs/M5-notes.md is what
+    # shows the script really sends its two transactions.
+    "deploy": {
+        "stages": [stage("deploy tests", "forge test --match-path contracts/test/Deploy.t.sol")],
+        "mutations": [
+            ("a zero owner is accepted", "contracts/script/Deploy.s.sol", "        if (owner == address(0)) revert OwnerRequired();\n", ""),
+            ("any chain is accepted", "contracts/script/Deploy.s.sol", "if (block.chainid != LOCAL && block.chainid != BASE_SEPOLIA && block.chainid != BASE) {", "if (false) {"),
+            ("the local chain is refused", "contracts/script/Deploy.s.sol", "block.chainid != LOCAL && block.chainid != BASE_SEPOLIA", "block.chainid != BASE_SEPOLIA"),
+            ("Base Sepolia is refused", "contracts/script/Deploy.s.sol", "block.chainid != LOCAL && block.chainid != BASE_SEPOLIA", "block.chainid != LOCAL"),
+            ("Base mainnet needs no confirmation", "contracts/script/Deploy.s.sol", "        if (block.chainid == BASE && !mainnetConfirmed) revert MainnetNotConfirmed();\n", ""),
+            ("any confirmation text counts", "contracts/script/Deploy.s.sol", 'confirmation == keccak256("yes")', 'confirmation != keccak256("")'),
+            ("the launch price changes", "contracts/script/Deploy.s.sol", "MINT_PRICE = 0.01 ether;", "MINT_PRICE = 0.1 ether;"),
+            ("the sender becomes the owner", "contracts/script/Deploy.s.sol", "new Proofkin(owner, address(renderer), MINT_PRICE)", "new Proofkin(msg.sender, address(renderer), MINT_PRICE)"),
+            ("the collection reads another renderer", "contracts/script/Deploy.s.sol", "new Proofkin(owner, address(renderer), MINT_PRICE)", "new Proofkin(owner, address(1), MINT_PRICE)"),
+            ("the owner variable is misnamed", "contracts/script/Deploy.s.sol", '"PROOFKIN_OWNER"', '"OWNER"'),
+            ("the confirmation variable is misnamed", "contracts/script/Deploy.s.sol", '"PROOFKIN_CONFIRM_MAINNET"', '"CONFIRM_MAINNET"'),
+            ("Base Sepolia is printed under another name", "contracts/script/Deploy.s.sol", '"baseSepolia"', '"sepolia"'),
+            ("the printed block number is the chain id", "contracts/script/Deploy.s.sol", "vm.toString(fromBlock)", "vm.toString(chainId)"),
+            ("the printed renderer is the collection", "contracts/script/Deploy.s.sol", "vm.toString(renderer)", "vm.toString(proofkin)"),
+        ],
+    },
     # The playground's money-and-salt logic, judged by its whole test suite (which runs the real contracts on Anvil).
     "playground": {
         "stages": [stage("playground tests", "pnpm --filter @proofkin/playground test")],
@@ -151,6 +174,11 @@ SUITES = {
             ("local test goes back to plain trial order", "packages/playground/src/localTest.ts", "for (const trial of order) {", "for (const trial of [...order].sort((a, b) => a - b)) {"),
             ("local test runs the fixed cases backwards", "packages/playground/src/localTest.ts", "const order = [...fixed];", "const order = [...fixed].reverse();"),
             ("local test drops the fixed cases from the count", "packages/playground/src/localTest.ts", "order.length < fixed.length + (opts.randomTrials", "order.length < (opts.randomTrials"),
+            ("dry run allowed on Base mainnet", "packages/playground/scripts/dry-run.ts", 'if (config.name === "base") {', "if (false) {"),
+            ("dry run skips the balance check", "packages/playground/scripts/dry-run.ts", "if (balance < price * BigInt(mints)) {", "if (false) {"),
+            ("dry run mints what is already minted", "packages/playground/scripts/dry-run.ts", 'if (status !== "free") {', "if (false) {"),
+            ("dry run does not compare what it reads back", "packages/playground/scripts/dry-run.ts", 'if (trait("Puzzle") !== p.name || trait("Nodes") !== p.nodeCount) {', "if (false) {"),
+            ("dry run never gives up on a stalled chain", "packages/playground/scripts/dry-run.ts", "if (waits >= MAX_WAITS)", "if (false)"),
             ("a zero block time accepted", "packages/playground/src/config.ts", "if (!(blockTime > 0))", "if (blockTime < 0)"),
         ],
     },
