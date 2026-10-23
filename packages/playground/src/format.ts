@@ -23,7 +23,7 @@ export function labelledInputs(puzzleId: number, inputs: number[]): { label: str
   return inputs.map((value, i) => ({ label: slots[i]?.label ?? `input ${i}`, value }));
 }
 
-const ORDINALS = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth"];
+const ORDINALS = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"];
 
 /** "the third edge case: …" for each of the puzzle's fixed trials, "random case n" for the rest. */
 export function describeTrial(puzzleId: number, trial: number): string {

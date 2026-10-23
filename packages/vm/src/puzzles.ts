@@ -78,6 +78,9 @@ const PUZZLES: readonly PuzzleSpec[] = [
     fixed: [
       [...fill(7, 0), 1], // sum == t - 1
       [...fill(7, 1), 7], // sum == t
+      // each voter alone says yes with t = 1: a program that does not read that voter says no
+      ...Array.from({ length: 7 }, (_, voter) => [...Array.from({ length: 7 }, (_, i) => (i === voter ? 1 : 0)), 1]),
+      [0, 1, 1, 1, 1, 1, 1, 7], // six yes, one no: one short of t
     ],
     solve: (x) => [sum(x.slice(0, 7)) >= x[7]! ? 1 : 0],
   },
@@ -85,7 +88,14 @@ const PUZZLES: readonly PuzzleSpec[] = [
     name: "MEDIAN5",
     ranges: repeat(5, [0, 255]),
     outputs: 1,
-    fixed: [fill(5, 128), [200, 150, 100, 50, 0]],
+    fixed: [
+      fill(5, 128),
+      [200, 150, 100, 50, 0],
+      // shuffles of five distinct values, with the median at x1, x3 and x0 (x2 is the median in the case above)
+      [40, 120, 80, 160, 200],
+      [160, 40, 200, 120, 80],
+      [120, 160, 40, 80, 200],
+    ],
     solve: (x) => [sortAsc(x)[2]!],
   },
   {

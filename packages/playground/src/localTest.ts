@@ -27,16 +27,25 @@ export function randomSeed(
   return `0x${Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("")}`;
 }
 
-/** Runs a valid program on every fixed case and `randomTrials` random ones, in trial order, and reports the first it gets wrong. */
+/**
+ * Runs a valid program on every fixed case, in trial order, and then on `randomTrials` random ones, and reports the
+ * first it gets wrong. The fixed cases go first because they have names: "the third edge case: the cheapest path is
+ * right, right, down, down" says more than a random case, and they are the same on every seed.
+ */
 export function runLocalTest(
   program: Uint8Array,
   opts: { seed?: Hex; randomTrials?: number } = {},
 ): LocalTestReport {
   const seed = opts.seed ?? randomSeed();
   const puzzleId = program[1]!;
-  const cases = fixedTrials(puzzleId).length + (opts.randomTrials ?? LOCAL_RANDOM_TRIALS);
+  const fixed = fixedTrials(puzzleId);
+  const order = [...fixed];
+  // the random trials are the other trial numbers, from 2 up: as many as asked for, however few
+  for (let trial = 2; order.length < fixed.length + (opts.randomTrials ?? LOCAL_RANDOM_TRIALS); trial++) {
+    if (!fixed.includes(trial)) order.push(trial);
+  }
 
-  for (let trial = 0; trial < cases; trial++) {
+  for (const trial of order) {
     const x = inputs(puzzleId, seed, trial);
     const expected = reference(puzzleId, x);
     const result = run(program, x);
@@ -45,5 +54,5 @@ export function runLocalTest(
       return { status: "fail", seed, failure: { trial, kind: "wrong", inputs: x, expected, got: result.outputs } };
     }
   }
-  return { status: "pass", seed, cases };
+  return { status: "pass", seed, cases: order.length };
 }

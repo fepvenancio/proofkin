@@ -31,7 +31,12 @@ export const PUZZLE_INFO: readonly PuzzleInfo[] = [
     inputs: [...slots("vote", 7, 0, 1), { label: "t", lo: 1, hi: 7 }],
     outputs: ["quorum reached (1) or not (0)"],
     rule: "1 if the votes add up to at least t, otherwise 0.",
-    edgeCases: ["all seven votes 0, with t = 1", "all seven votes 1, with t = 7"],
+    edgeCases: [
+      "all seven votes 0, with t = 1",
+      "all seven votes 1, with t = 7",
+      ...[0, 1, 2, 3, 4, 5, 6].map((voter) => `only voter ${voter} says yes, with t = 1`),
+      "six voters say yes and voter 0 says no, with t = 7: one short",
+    ],
   },
   {
     id: 1,
@@ -40,7 +45,13 @@ export const PUZZLE_INFO: readonly PuzzleInfo[] = [
     inputs: slots("x", 5, 0, 255),
     outputs: ["the median"],
     rule: "The third smallest of the five values.",
-    edgeCases: ["all five values equal (128)", "strictly descending: 200, 150, 100, 50, 0"],
+    edgeCases: [
+      "all five values equal (128)",
+      "strictly descending: 200, 150, 100, 50, 0",
+      "five different values in a shuffled order: 40, 120, 80, 160, 200 (the median is x1)",
+      "five different values in a shuffled order: 160, 40, 200, 120, 80 (the median is x3)",
+      "five different values in a shuffled order: 120, 160, 40, 80, 200 (the median is x0)",
+    ],
   },
   {
     id: 2,

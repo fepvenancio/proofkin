@@ -11,7 +11,7 @@ import { type ErrorName, MAX_NODES, Op, run, validate } from "./vm.ts";
 export const PROGRAM_COUNT = 2000;
 export const INVALID_COUNT = 500;
 const SEEDS_PER_PUZZLE = 24;
-const TRIALS_PER_SEED = 18; // trials 0..17: every trial any puzzle has (up to 15), and two past the end, which are random again
+const TRIALS_PER_SEED = 20; // trials 0..19: every trial any puzzle has (up to 17), and two past the end, which are random again
 const RNG_SEED = 0x50524b4e;
 
 /** Keys are alphabetical: Foundry maps JSON objects onto Solidity structs in that order. */

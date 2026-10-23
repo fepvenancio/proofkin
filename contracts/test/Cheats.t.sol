@@ -11,7 +11,7 @@ import {ProofkinBase} from "./helpers/ProofkinBase.sol";
 ///         They are valid programs, so nothing but the trials can refuse them, and they have to be
 ///         refused whatever the seed. `pnpm gen:fixtures` builds the file from packages/vm/src/cheats.ts.
 contract CheatsTest is ProofkinBase {
-    uint256 constant CHEATS = 42;
+    uint256 constant CHEATS = 74;
 
     function setUp() public {
         _deploy(MINT_PRICE);
@@ -45,7 +45,7 @@ contract CheatsTest is ProofkinBase {
         return false;
     }
 
-    function test_thereAreFortyTwoAndEachIsAValidProgram() public view {
+    function test_thereAreSeventyFourAndEachIsAValidProgram() public view {
         (string memory json, string[] memory names) = _load();
         assertEq(names.length, CHEATS);
         for (uint256 k; k < names.length; ++k) {

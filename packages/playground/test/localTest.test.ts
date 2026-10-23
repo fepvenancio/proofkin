@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { gridPathSource } from "../../vm/src/cheats.ts";
 import { assemble, fixedTrials, inputs, reference, run, trialCount } from "@proofkin/vm";
 import { describe, expect, it } from "vitest";
+import { describeTrial } from "../src/format.ts";
 import { LOCAL_RANDOM_TRIALS, randomSeed, runLocalTest } from "../src/localTest.ts";
 
 const solution = (name: string) =>
@@ -19,10 +20,10 @@ describe("runLocalTest", () => {
       const cases = fixedTrials(id).length + 100;
       expect(runLocalTest(solution(name), { seed: SEED }), name).toEqual({ status: "pass", seed: SEED, cases });
     });
-    expect(names.map((_, id) => fixedTrials(id).length + 100)).toEqual([102, 102, 104, 108, 108, 102]);
+    expect(names.map((_, id) => fixedTrials(id).length + 100)).toEqual([110, 105, 104, 108, 108, 102]);
   });
 
-  it("reports the first failing case, in trial order, with what was expected and what came out", () => {
+  it("reports the first failing case, with what was expected and what came out", () => {
     // QUORUM7 with `sum < t` turned into `t < sum`: wrong on the very first edge case
     const broken = assemble(source("QUORUM7").replace("LT s6 t", "LT t s6"));
     const r = runLocalTest(broken, { seed: SEED });
@@ -35,17 +36,15 @@ describe("runLocalTest", () => {
   it("catches a program that passes the two tie cases and only fails a later one", () => {
     // GRID_PATH with its first MIN turned into MAX: identical results while every edge weighs the same
     const text = source("GRID_PATH").replace("= MIN", "= MAX");
-    const r = runLocalTest(assemble(text), { seed: SEED });
+    const program = assemble(text);
+    const r = runLocalTest(program, { seed: SEED });
     if (r.status !== "fail") throw new Error("expected a failure");
     expect(r.failure.trial).toBeGreaterThanOrEqual(2);
     expect(r.failure.kind).toBe("wrong");
 
-    // it really is the first failing trial: everything before it agrees with the reference
-    const program = assemble(text);
-    for (let trial = 0; trial < r.failure.trial; trial++) {
-      const x = inputs(3, SEED, trial);
-      expect(run(program, x).outputs, `trial ${trial}`).toEqual(reference(3, x));
-    }
+    // it really is the first failing case in the order the cases run: the fixed ones, in trial order
+    const wrongOn = (trial: number) => run(program, inputs(3, SEED, trial)).outputs.join() !== reference(3, inputs(3, SEED, trial)).join();
+    expect(r.failure.trial).toBe(fixedTrials(3).find(wrongOn));
     // and the report's own numbers are consistent
     expect(r.failure.inputs).toEqual(inputs(3, SEED, r.failure.trial));
     expect(r.failure.expected).toEqual(reference(3, r.failure.inputs));
@@ -71,6 +70,41 @@ describe("runLocalTest", () => {
     expect(trialCount(3)).toBeGreaterThan(r.failure.trial);
   });
 
+  it("names a fixed case, not a random one, whenever a fixed case catches the program", () => {
+    // the program is wrong on about a fifth of random inputs too, so a run in trial order would mostly say "random case"
+    const program = assemble(gridPathSource({ skip: 0 }));
+    for (let n = 1; n <= 40; n++) {
+      const r = runLocalTest(program, { seed: `0x${n.toString(16).padStart(64, "0")}` });
+      if (r.status !== "fail") throw new Error(`seed ${n}: expected a failure`);
+      expect(r.failure.trial, `seed ${n}`).toBe(10);
+      expect(describeTrial(3, r.failure.trial), `seed ${n}`).toMatch(/^the third edge case: .*right, right, down, down/);
+    }
+  });
+
+  it("runs every fixed case however few random ones are asked for", () => {
+    const wrong = assemble(gridPathSource({ skip: 0 })); // only the fixed case for the path it misses catches it
+    for (const randomTrials of [0, 1, 7]) {
+      const r = runLocalTest(wrong, { seed: SEED, randomTrials });
+      expect(r, `randomTrials ${randomTrials}`).toMatchObject({ status: "fail", failure: { trial: 10 } });
+    }
+    expect(runLocalTest(solution("GRID_PATH"), { seed: SEED, randomTrials: 0 })).toEqual({ status: "pass", seed: SEED, cases: fixedTrials(3).length });
+  });
+
+  it("then draws the random cases in order, numbered as the contract numbers its own", () => {
+    // FAIR_SPLIT4 that always scales: right on both fixed cases (the sum equals, then exceeds, the budget),
+    // wrong whenever the requests add up to less than the budget
+    const program = assemble(source("FAIR_SPLIT4").replace("over = LT b total", "over = OR b b"));
+    const failures = new Set<string>();
+    for (let n = 1; n <= 6; n++) {
+      const r = runLocalTest(program, { seed: `0x${n.toString(16).padStart(64, "0")}` });
+      if (r.status !== "fail") throw new Error(`seed ${n}: expected a failure`);
+      expect(describeTrial(5, r.failure.trial)).toMatch(/^random case \d+$/);
+      expect(r.failure.trial).toBeGreaterThanOrEqual(2);
+      failures.add(JSON.stringify(r.failure.inputs));
+    }
+    expect(failures.size).toBeGreaterThan(1); // different seeds, different random cases
+  });
+
   it("reports an arithmetic failure as its own kind", () => {
     // a vote (0 or 1) minus 255 underflows
     const program = assemble("puzzle QUORUM7\nv = IN 0\nk = CONST 255\nd = SUB v k\nout d");
@@ -80,18 +114,11 @@ describe("runLocalTest", () => {
     });
   });
 
-  it("is deterministic for a seed and different seeds draw different random cases", () => {
+  it("is deterministic for a seed", () => {
     const p = solution("SORT8");
     expect(runLocalTest(p, { seed: SEED })).toEqual(runLocalTest(p, { seed: SEED }));
-
-    const broken = assemble(source("GRID_PATH").replace("= MIN", "= MAX"));
-    const trials = new Set(
-      [1, 2, 3, 4, 5, 6].map((n) => {
-        const r = runLocalTest(broken, { seed: `0x${n.toString(16).padStart(64, "0")}` });
-        return r.status === "fail" ? JSON.stringify(r.failure.inputs) : "pass";
-      }),
-    );
-    expect(trials.size).toBeGreaterThan(1);
+    const broken = assemble(source("FAIR_SPLIT4").replace("over = LT b total", "over = OR b b"));
+    expect(runLocalTest(broken, { seed: SEED })).toEqual(runLocalTest(broken, { seed: SEED }));
   });
 
   it("uses a fresh random seed when none is given, and reports it so a failure can be reproduced", () => {

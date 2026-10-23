@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { assemble } from "../src/asm.ts";
-import { generateCheats, gridPathSource, knapsack3Source, quorum7Source, sort8Source } from "../src/cheats.ts";
+import { generateCheats, gridPathSource, knapsack3Source, median5Source, quorum7Source, sort8Source } from "../src/cheats.ts";
 import { fixedTrials, inputs, PUZZLE_NAMES, reference, trialCount } from "../src/puzzles.ts";
 import { run, validate } from "../src/vm.ts";
 
@@ -27,6 +27,7 @@ function agreement(program: Uint8Array, puzzleId: number): number {
 describe("the builders, with nothing left out, make correct solutions", () => {
   const builders: [number, string, string][] = [
     [0, "QUORUM7", quorum7Source()],
+    [1, "MEDIAN5", median5Source()],
     [2, "SORT8", sort8Source()],
     [3, "GRID_PATH", gridPathSource()],
     [4, "KNAPSACK3", knapsack3Source()],
@@ -47,10 +48,10 @@ describe("the builders, with nothing left out, make correct solutions", () => {
 describe("the wrong programs", () => {
   const cheats = generateCheats().map((c) => ({ ...c, program: assemble(c.source) }));
 
-  it("are 42, each with its own name, covering four puzzles", () => {
-    expect(cheats).toHaveLength(42);
-    expect(new Set(cheats.map((c) => c.name)).size).toBe(42);
-    expect(new Set(cheats.map((c) => PUZZLE_NAMES[c.puzzleId]))).toEqual(new Set(["QUORUM7", "SORT8", "GRID_PATH", "KNAPSACK3"]));
+  it("are 74, each with its own name, covering five puzzles", () => {
+    expect(cheats).toHaveLength(74);
+    expect(new Set(cheats.map((c) => c.name)).size).toBe(74);
+    expect(new Set(cheats.map((c) => PUZZLE_NAMES[c.puzzleId]))).toEqual(new Set(["QUORUM7", "MEDIAN5", "SORT8", "GRID_PATH", "KNAPSACK3"]));
     for (const c of cheats) expect(c.name.startsWith(PUZZLE_NAMES[c.puzzleId]!)).toBe(true);
   });
 

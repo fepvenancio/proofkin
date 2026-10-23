@@ -23,8 +23,8 @@ library Puzzles {
     error BadInputLength();
 
     uint256 internal constant PUZZLE_COUNT = 6;
-    /// @dev Trials 0 and 1 are fixed edge cases; trials 2..9 are seeded-random. GRID_PATH, KNAPSACK3
-    ///      and SORT8 have further fixed trials from here on (see `trialCount`); past a puzzle's own,
+    /// @dev Trials 0 and 1 are fixed edge cases; trials 2..9 are seeded-random. Every puzzle but
+    ///      FAIR_SPLIT4 has further fixed trials from here on (see `trialCount`); past a puzzle's own,
     ///      trials are random again.
     uint256 internal constant TRIALS = 10;
 
@@ -37,6 +37,8 @@ library Puzzles {
 
     /// @notice How many trials a solution has to pass: `TRIALS`, plus the puzzle's further fixed cases.
     function trialCount(uint256 id) internal pure returns (uint256) {
+        if (id == QUORUM7) return TRIALS + 8;
+        if (id == MEDIAN5) return TRIALS + 3;
         if (id == GRID_PATH || id == KNAPSACK3) return TRIALS + 6;
         if (id == SORT8) return TRIALS + 2;
         if (id < PUZZLE_COUNT) return TRIALS;
@@ -172,7 +174,24 @@ library Puzzles {
     ///      best set at cap 20 (30 each against 10). Either way the best set weighs exactly the cap.
     ///      SORT8: two permutations that, with trials 0 and 1, expose the removal of any one comparator
     ///      from the usual 19-comparator network.
+    ///      QUORUM7: cases 0..6 have voter k alone saying yes with t = 1, so a program that does not
+    ///      read voter k says no; case 7 has six yes and one no with t = 7, one short.
+    ///      MEDIAN5: three shuffles of 40, 80, 120, 160, 200 with the median (120) at x1, x3 and x0;
+    ///      with trials 0 and 1 they expose the bypass of any one node of the usual network.
     function _further(uint256 id, uint256 k, uint256[] memory x) private pure {
+        if (id == QUORUM7) {
+            // x starts as zeros
+            if (k < 7) {
+                x[k] = 1;
+                x[7] = 1;
+            } else {
+                for (uint256 i = 1; i < 7; ++i) {
+                    x[i] = 1;
+                }
+                x[7] = 7;
+            }
+            return;
+        }
         if (id == GRID_PATH) {
             for (uint256 i; i < 12; ++i) {
                 x[i] = 15;
@@ -190,9 +209,11 @@ library Puzzles {
             // w0 v0 w1 v1 w2 v2 cap, one row per case
             rows = hex"0a320a140a1e0a" hex"0a140a320a1e0a" hex"0a140a1e0a320a" hex"0a1e0a1e0a0a14"
                 hex"0a1e0a0a0a1e14" hex"0a0a0a1e0a1e14";
+        } else if (id == SORT8) {
+            rows = hex"004060a020c080e0" hex"006020a04080c0e0";
         } else {
-            rows = hex"004060a020c080e0" // SORT8
-                hex"006020a04080c0e0";
+            rows = hex"287850a0c8" // MEDIAN5
+                hex"a028c87850" hex"78a02850c8";
         }
         for (uint256 i; i < x.length; ++i) {
             x[i] = uint8(rows[k * x.length + i]);

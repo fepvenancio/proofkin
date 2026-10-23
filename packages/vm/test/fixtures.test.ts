@@ -97,7 +97,7 @@ describe("diff fixtures: invalid programs", () => {
 });
 
 describe("diff fixtures: input/reference vectors", () => {
-  it("match inputs() and reference() and span every puzzle and trials 0..17", () => {
+  it("match inputs() and reference() and span every puzzle and trials 0..19", () => {
     for (const row of fx.vectors) {
       const xs = inputs(row.puzzleId, row.seed, row.trial);
       expect(row.inputs).toEqual(xs);
@@ -105,7 +105,7 @@ describe("diff fixtures: input/reference vectors", () => {
     }
     for (let id = 0; id < PUZZLE_COUNT; id++) {
       const trials = new Set(fx.vectors.filter((r) => r.puzzleId === id).map((r) => r.trial));
-      expect([...trials].sort((a, b) => a - b)).toEqual(Array.from({ length: 18 }, (_, trial) => trial));
+      expect([...trials].sort((a, b) => a - b)).toEqual(Array.from({ length: 20 }, (_, trial) => trial));
     }
   });
 });

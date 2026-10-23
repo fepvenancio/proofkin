@@ -235,7 +235,7 @@ contract PuzzlesTest is Test {
     // ------------------------------------------- further fixed trials 10 and up
 
     function test_trialCount() public view {
-        uint8[6] memory want = [10, 10, 12, 16, 16, 10];
+        uint8[6] memory want = [18, 13, 12, 16, 16, 10];
         for (uint256 id; id < 6; ++id) {
             assertEq(h.trialCount(id), want[id], "trialCount");
         }
@@ -332,6 +332,40 @@ contract PuzzlesTest is Test {
             assertEq(winner, wanted[k], "the intended set");
             assertEq(winnerWeight, x[6], "weighing exactly the cap");
             assertEq(h.referenceOutputs(KNAPSACK3, x)[0], best);
+        }
+    }
+
+    function test_quorum7_furtherTrialsHaveEachVoterAloneSayingYesThenOneShortOfSeven()
+        public
+        view
+    {
+        for (uint256 voter; voter < 7; ++voter) {
+            uint256[] memory x = h.inputs(QUORUM7, SEED_1, 10 + voter);
+            for (uint256 i; i < 7; ++i) {
+                assertEq(x[i], i == voter ? 1 : 0, "only this voter says yes");
+            }
+            assertEq(x[7], 1, "t = 1");
+            assertEq(h.referenceOutputs(QUORUM7, x)[0], 1);
+        }
+
+        uint256[] memory near = h.inputs(QUORUM7, SEED_1, 17);
+        assertEq(near[0], 0, "one voter says no");
+        for (uint256 i = 1; i < 7; ++i) {
+            assertEq(near[i], 1, "the other six say yes");
+        }
+        assertEq(near[7], 7, "t = 7");
+        assertEq(h.referenceOutputs(QUORUM7, near)[0], 0, "six of seven is one short");
+    }
+
+    function test_median5_furtherTrialsAreShufflesWithTheMedianAtX1X3AndX0() public view {
+        uint8[5][3] memory want =
+            [[40, 120, 80, 160, 200], [160, 40, 200, 120, 80], [120, 160, 40, 80, 200]];
+        for (uint256 k; k < 3; ++k) {
+            uint256[] memory x = h.inputs(MEDIAN5, SEED_1, 10 + k);
+            for (uint256 i; i < 5; ++i) {
+                assertEq(x[i], want[k][i], "the shuffle");
+            }
+            assertEq(h.referenceOutputs(MEDIAN5, x)[0], 120, "the median");
         }
     }
 

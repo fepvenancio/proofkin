@@ -13,6 +13,7 @@ export interface Cheat {
 }
 
 const QUORUM7 = 0;
+const MEDIAN5 = 1;
 const SORT8 = 2;
 const GRID_PATH = 3;
 const KNAPSACK3 = 4;
@@ -41,6 +42,71 @@ export function quorum7Source(opts: { skip?: number; compare?: "atLeast" | "grea
   else if (compare === "greaterThan") lines.push(`ok = LT t ${sum}`);
   else lines.push("one = CONST 1", `up = ADD ${sum} one`, "lt = LT up t", "zero = CONST 0", "ok = EQ lt zero"); // sum + 1 >= t
   lines.push("out ok");
+  return lines.join("\n");
+}
+
+/** QUORUM7 read loosely, the way a shortcut would: not every voter, or not the threshold. */
+export type LooseQuorum =
+  | { kind: "onlyVoter"; voter: number } // the answer is that voter's vote
+  | { kind: "majority"; voters: number } // at least half of the first `voters` voters, whatever t is
+  | { kind: "cap"; at: number } // sum >= min(t, at)
+  | { kind: "raise"; to: number }; // sum >= max(t, to)
+
+export function quorum7LooseSource(shape: LooseQuorum): string {
+  if (shape.kind === "onlyVoter") return `puzzle QUORUM7\nv = IN ${shape.voter}\nout v`;
+
+  const voters = shape.kind === "majority" ? shape.voters : 7;
+  const lines = ["puzzle QUORUM7"];
+  for (let i = 0; i < voters; i++) lines.push(`v${i} = IN ${i}`);
+  if (shape.kind !== "majority") lines.push("t = IN 7");
+  let sum = "v0";
+  for (let i = 1; i < voters; i++) {
+    lines.push(`s${i} = ADD ${sum} v${i}`);
+    sum = `s${i}`;
+  }
+  if (shape.kind === "majority") lines.push(`bar = CONST ${Math.ceil(voters / 2)}`);
+  else lines.push(`lim = CONST ${shape.kind === "cap" ? shape.at : shape.to}`, `bar = ${shape.kind === "cap" ? "MIN" : "MAX"} t lim`);
+  lines.push(`lt = LT ${sum} bar`, "zero = CONST 0", "ok = EQ lt zero", "out ok");
+  return lines.join("\n");
+}
+
+// ----------------------------------------------------------------- MEDIAN5
+
+/** The fixture solution as a network: order two pairs, then the median of what can still be the median. */
+const MEDIAN5_NETWORK: readonly (readonly [name: string, op: string, a: string, b: string])[] = [
+  ["lo1", "MIN", "x0", "x1"],
+  ["hi1", "MAX", "x0", "x1"],
+  ["lo2", "MIN", "x2", "x3"],
+  ["hi2", "MAX", "x2", "x3"],
+  ["a", "MAX", "lo1", "lo2"],
+  ["b", "MIN", "hi1", "hi2"],
+  ["lo", "MIN", "a", "b"],
+  ["hi", "MAX", "a", "b"],
+  ["t", "MIN", "hi", "x4"],
+  ["m", "MAX", "lo", "t"],
+];
+
+/** Every way to bypass one node: `node` stops being computed and whatever read it reads `operand` (0 = first, 1 = second) instead. */
+export const MEDIAN5_BYPASSES = MEDIAN5_NETWORK.flatMap(([node, , a, b]) => [
+  { node, operand: 0 as const, becomes: a },
+  { node, operand: 1 as const, becomes: b },
+]);
+
+export function median5Source(opts: { bypass?: { node: string; operand: 0 | 1 } } = {}): string {
+  const instead = new Map<string, string>();
+  const bypassed = MEDIAN5_NETWORK.find(([name]) => name === opts.bypass?.node);
+  if (opts.bypass && bypassed) instead.set(bypassed[0], bypassed[opts.bypass.operand === 0 ? 2 : 3]);
+  const resolve = (name: string) => instead.get(name) ?? name;
+
+  const kept = MEDIAN5_NETWORK.filter(([name]) => !instead.has(name)).map(([name, op, a, b]) => [name, op, resolve(a), resolve(b)] as const);
+  const output = resolve("m");
+  const live = new Set([output]);
+  for (const [name, , a, b] of [...kept].reverse()) if (live.has(name)) [a, b].forEach((x) => live.add(x));
+
+  const lines = ["puzzle MEDIAN5"];
+  for (let i = 0; i < 5; i++) if (live.has(`x${i}`)) lines.push(`x${i} = IN ${i}`);
+  for (const [name, op, a, b] of kept) if (live.has(name)) lines.push(`${name} = ${op} ${a} ${b}`);
+  lines.push(`out ${output}`);
   return lines.join("\n");
 }
 
@@ -158,6 +224,19 @@ export function generateCheats(): Cheat[] {
     { name: "QUORUM7_strictly_greater", puzzleId: QUORUM7, source: quorum7Source({ compare: "greaterThan" }) },
     { name: "QUORUM7_one_below_threshold", puzzleId: QUORUM7, source: quorum7Source({ compare: "oneBelow" }) },
   );
+  for (let voter = 0; voter < 7; voter++) {
+    cheats.push({ name: `QUORUM7_only_v${voter}`, puzzleId: QUORUM7, source: quorum7LooseSource({ kind: "onlyVoter", voter }) });
+  }
+  cheats.push(
+    { name: "QUORUM7_majority_of_three", puzzleId: QUORUM7, source: quorum7LooseSource({ kind: "majority", voters: 3 }) },
+    { name: "QUORUM7_majority_of_seven_ignoring_t", puzzleId: QUORUM7, source: quorum7LooseSource({ kind: "majority", voters: 7 }) },
+    { name: "QUORUM7_threshold_capped_at_4", puzzleId: QUORUM7, source: quorum7LooseSource({ kind: "cap", at: 4 }) },
+    { name: "QUORUM7_threshold_capped_at_5", puzzleId: QUORUM7, source: quorum7LooseSource({ kind: "cap", at: 5 }) },
+    { name: "QUORUM7_threshold_raised_to_2", puzzleId: QUORUM7, source: quorum7LooseSource({ kind: "raise", to: 2 }) },
+  );
+  for (const { node, operand, becomes } of MEDIAN5_BYPASSES) {
+    cheats.push({ name: `MEDIAN5_bypass_${node}_to_${becomes}`, puzzleId: MEDIAN5, source: median5Source({ bypass: { node, operand } }) });
+  }
   GRID_PATHS.forEach((moves, index) => {
     cheats.push({ name: `GRID_PATH_without_${moves}`, puzzleId: GRID_PATH, source: gridPathSource({ skip: index }) });
   });

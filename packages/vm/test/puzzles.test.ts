@@ -77,12 +77,12 @@ describe("further fixed trials 10 and up (§4.1)", () => {
 
   it("gives each puzzle its trial count", () => {
     expect(TRIALS).toBe(10);
-    expect(allIds.map(trialCount)).toEqual([10, 10, 12, 16, 16, 10]);
+    expect(allIds.map(trialCount)).toEqual([18, 13, 12, 16, 16, 10]);
   });
 
   it("lists the trials whose inputs ignore the seed", () => {
-    expect(fixedTrials(QUORUM7)).toEqual([0, 1]);
-    expect(fixedTrials(MEDIAN5)).toEqual([0, 1]);
+    expect(fixedTrials(QUORUM7)).toEqual([0, 1, 10, 11, 12, 13, 14, 15, 16, 17]);
+    expect(fixedTrials(MEDIAN5)).toEqual([0, 1, 10, 11, 12]);
     expect(fixedTrials(SORT8)).toEqual([0, 1, 10, 11]);
     expect(fixedTrials(GRID_PATH)).toEqual([0, 1, 10, 11, 12, 13, 14, 15]);
     expect(fixedTrials(KNAPSACK3)).toEqual([0, 1, 10, 11, 12, 13, 14, 15]);
@@ -101,6 +101,31 @@ describe("further fixed trials 10 and up (§4.1)", () => {
         expect(inputs(id, SEED_1, trial)).not.toEqual(inputs(id, SEED_2, trial));
       }
     }
+  });
+
+  it("QUORUM7: trials 10..16 have each voter alone saying yes with t = 1, and trial 17 sits one short of t = 7", () => {
+    for (let voter = 0; voter < 7; voter++) {
+      const x = inputs(QUORUM7, SEED_1, 10 + voter);
+      expect(x, `voter ${voter}`).toEqual([...Array.from({ length: 7 }, (_, i) => (i === voter ? 1 : 0)), 1]);
+      expect(reference(QUORUM7, x), `voter ${voter}`).toEqual([1]);
+    }
+    const nearMiss = inputs(QUORUM7, SEED_1, 17);
+    expect(nearMiss).toEqual([0, 1, 1, 1, 1, 1, 1, 7]); // six yes, one no: sum 6, one short of t
+    expect(reference(QUORUM7, nearMiss)).toEqual([0]);
+  });
+
+  it("MEDIAN5: trials 10..12 are shuffles of five distinct values, with the median at x1, x3 and x0", () => {
+    const wanted = [
+      [40, 120, 80, 160, 200],
+      [160, 40, 200, 120, 80],
+      [120, 160, 40, 80, 200],
+    ];
+    wanted.forEach((x, k) => {
+      expect(inputs(MEDIAN5, SEED_1, 10 + k), `trial ${10 + k}`).toEqual(x);
+      expect([...x].sort((a, b) => a - b)).toEqual([40, 80, 120, 160, 200]);
+      expect(reference(MEDIAN5, x)).toEqual([120]);
+    });
+    expect(wanted.map((x) => x.indexOf(120))).toEqual([1, 3, 0]);
   });
 
   it("GRID_PATH: trials 10..15 make each path in turn the single cheapest", () => {

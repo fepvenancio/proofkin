@@ -360,6 +360,7 @@ export function mountSolve(root: HTMLElement, app: App): () => void {
 
   const resume = (p: PendingCommit) =>
     guarded(async () => {
+      if (p.puzzleId !== puzzleId) selectPuzzle(p.puzzleId); // the page follows the commit it is continuing
       active = await reconcile(mintDeps(), p);
       if (active.status === "committed") watchBlocks();
     });
@@ -415,8 +416,10 @@ export function mountSolve(root: HTMLElement, app: App): () => void {
     renderedShape = shape();
     live.wait = undefined;
     live.ready = undefined;
-    const info = PUZZLE_INFO[puzzleId]!;
-    const best = collection?.bestNodes[puzzleId];
+    // The panel describes the commit in flight when there is one, whichever puzzle's tab is open.
+    const mintId = active?.puzzleId ?? puzzleId;
+    const info = PUZZLE_INFO[mintId]!;
+    const best = collection?.bestNodes[mintId];
     const unfinished = app.wallet
       ? app.store.list({ chainId: config.chain.id, contract: config.proofkin, account: app.wallet.account }).filter((p) => p.status !== "revealed" && p.hash !== active?.hash)
       : [];
@@ -427,7 +430,7 @@ export function mountSolve(root: HTMLElement, app: App): () => void {
       h("dt", null, "Price"),
       h("dd", null, collection ? formatEth(collection.mintPrice) : "…"),
       h("dt", null, `${info.name} slots left`),
-      h("dd", null, collection ? `${slotsLeft(collection.solvedCount[puzzleId]!)} of 50` : "…"),
+      h("dd", null, collection ? `${slotsLeft(collection.solvedCount[mintId]!)} of 50` : "…"),
       h("dt", null, "Smallest solution"),
       h("dd", null, collection ? (best === 255 ? "none yet" : `${best} nodes`) : "…"),
     );

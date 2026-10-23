@@ -54,6 +54,28 @@ describe("puzzle descriptions match the VM's puzzles", () => {
     }
   });
 
+  it("QUORUM7: each further case names the one voter saying yes, and the last the near miss", () => {
+    for (let voter = 0; voter < 7; voter++) {
+      const x = inputs(0, "0x01", 10 + voter);
+      expect(x, `trial ${10 + voter}`).toEqual([...Array.from({ length: 7 }, (_, i) => (i === voter ? 1 : 0)), 1]);
+      expect(PUZZLE_INFO[0]!.edgeCases[2 + voter], `voter ${voter}`).toContain(`only voter ${voter} says yes`);
+    }
+    expect(inputs(0, "0x01", 17)).toEqual([0, 1, 1, 1, 1, 1, 1, 7]);
+    expect(PUZZLE_INFO[0]!.edgeCases[9]).toContain("voter 0 says no");
+    expect(PUZZLE_INFO[0]!.edgeCases[9]).toContain("t = 7");
+  });
+
+  it("MEDIAN5: each further case shows its values and where the median sits", () => {
+    const wherever = ["x1", "x3", "x0"];
+    wherever.forEach((where, k) => {
+      const x = inputs(1, "0x01", 10 + k);
+      const text = PUZZLE_INFO[1]!.edgeCases[2 + k]!;
+      expect(text, where).toContain(x.join(", "));
+      expect(text, where).toContain(`the median is ${where}`);
+      expect(x[Number(where.slice(1))], where).toBe(reference(1, x)[0]); // and it is
+    });
+  });
+
   it("GRID_PATH: each further case names the path that is cheapest in it", () => {
     const paths = ["RRDD", "RDRD", "RDDR", "DRRD", "DRDR", "DDRR"];
     const edgesOf = (moves: string) => {

@@ -14,7 +14,7 @@ import {VMHarness} from "./helpers/VMHarness.sol";
 ///
 ///      Each test decodes its own slice of rows: one transaction's memory only grows, so a single
 ///      test over all rows runs out of gas. The chunk counts below must cover the whole fixture
-///      (4000 valid rows, 500 invalid, 2592 vectors); `test_chunksCoverTheWholeFixture` checks it.
+///      (4000 valid rows, 500 invalid, 2880 vectors); `test_chunksCoverTheWholeFixture` checks it.
 contract DifferentialTest is Test {
     struct ValidRow {
         uint256[] inputs;
@@ -41,7 +41,7 @@ contract DifferentialTest is Test {
 
     uint256 constant VALID_CHUNK = 500; // x 8
     uint256 constant INVALID_CHUNK = 250; // x 2
-    uint256 constant VECTOR_CHUNK = 648; // x 4
+    uint256 constant VECTOR_CHUNK = 720; // x 4
 
     VMHarness h = new VMHarness();
 
