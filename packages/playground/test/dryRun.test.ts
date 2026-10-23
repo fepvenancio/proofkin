@@ -2,11 +2,8 @@ import { PUZZLE_NAMES } from "@proofkin/vm";
 import { type Address, parseEther } from "viem";
 import { describe, expect, it } from "vitest";
 import { dryRunMints } from "../scripts/dry-run.ts";
-import { proofkinAbi } from "../src/abi.ts";
-import { parseConfig } from "../src/config.ts";
-import type { MintDeps } from "../src/mint.ts";
-import { PendingStore } from "../src/storage.ts";
-import { isolateChain, makeKit } from "./kit.ts";
+import { type MintDeps, PendingStore, parseConfig, proofkinAbi } from "@proofkin/core";
+import { isolateChain, makeKit } from "@proofkin/core/testing";
 
 describe("dryRunMints", async () => {
   const kit = await makeKit();

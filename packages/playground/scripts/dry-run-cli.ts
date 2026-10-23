@@ -5,9 +5,7 @@
 // real funds. It is not read from any file, and never printed.
 import { createWalletClient, formatEther, type Hex, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { makePublicClient } from "../src/chain.ts";
-import { parseConfig } from "../src/config.ts";
-import { PendingStore } from "../src/storage.ts";
+import { PendingStore, makePublicClient, parseConfig } from "@proofkin/core";
 import { dryRunMints } from "./dry-run.ts";
 
 const fail = (message: string): never => {

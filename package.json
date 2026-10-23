@@ -9,6 +9,10 @@
     "dev:chain": "pnpm --filter @proofkin/playground dev:chain",
     "dev:playground": "pnpm --filter @proofkin/playground dev",
     "build:playground": "pnpm --filter @proofkin/playground build",
-    "launch:dry-run": "pnpm --filter @proofkin/playground launch:dry-run"
+    "launch:dry-run": "pnpm --filter @proofkin/playground launch:dry-run",
+    "dev:web": "pnpm --filter @proofkin/web dev",
+    "build:web": "pnpm --filter @proofkin/web build",
+    "lint:web": "pnpm --filter @proofkin/web lint",
+    "gen:abi": "pnpm --filter @proofkin/core gen:abi"
   }
 }

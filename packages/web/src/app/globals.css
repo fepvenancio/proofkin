@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@import "@fontsource-variable/newsreader";
+@import "@fontsource-variable/jetbrains-mono";
+
+/* Placeholder: the design pass (colours, type, the per-puzzle hue) comes with the first real pages. */
+:root {
+  --font-serif: "Newsreader Variable", Georgia, serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+}
+
+body {
+  font-family: var(--font-serif);
+}

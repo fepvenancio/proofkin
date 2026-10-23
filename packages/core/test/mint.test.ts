@@ -6,8 +6,8 @@ import { proofkinAbi } from "../src/abi.ts";
 import { currentBlock } from "../src/chain.ts";
 import { friendlyError, type MintDeps, phaseOf, prepareCommit, reconcile, sendCommit, sendReveal } from "../src/mint.ts";
 import { PendingStore } from "../src/storage.ts";
-import { isolateChain, makeKit, programOf, solutionText } from "./kit.ts";
-import { MemoryStorage } from "./memoryStorage.ts";
+import { isolateChain, makeKit, programOf, solutionText } from "../src/testing/kit.ts";
+import { MemoryStorage } from "../src/testing/memoryStorage.ts";
 
 const kit = await makeKit();
 isolateChain(kit);

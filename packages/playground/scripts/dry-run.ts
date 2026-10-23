@@ -4,11 +4,7 @@
 import { readFileSync } from "node:fs";
 import { PUZZLE_NAMES } from "@proofkin/vm";
 import { formatEther, type Hex } from "viem";
-import { proofkinAbi } from "../src/abi.ts";
-import { analyze } from "../src/analyze.ts";
-import { checkProgram } from "../src/chain.ts";
-import { fetchToken } from "../src/gallery.ts";
-import { friendlyError, type MintDeps, phaseOf, prepareCommit, sendCommit, sendReveal } from "../src/mint.ts";
+import { type MintDeps, analyze, checkProgram, fetchToken, friendlyError, phaseOf, prepareCommit, proofkinAbi, sendCommit, sendReveal } from "@proofkin/core";
 
 export interface DryRunResult {
   puzzle: string;

@@ -1,8 +1,6 @@
 // What the views share: the chain, the saved commits, and the connected wallet.
 import type { Address } from "viem";
-import type { Reader } from "../chain.ts";
-import type { AppConfig } from "../config.ts";
-import type { PendingStore } from "../storage.ts";
+import type { AppConfig, PendingStore, Reader } from "@proofkin/core";
 import type { Wallet } from "../wallet.ts";
 
 export interface WalletState {

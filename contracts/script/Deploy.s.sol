@@ -62,24 +62,57 @@ contract Deploy is Script {
                 envBlock(block.chainid, address(proofkin), address(renderer), block.number)
             )
         );
+        console.log(
+            string.concat(
+                "\nWeb app .env.local:\n",
+                nextEnvBlock(block.chainid, address(proofkin), address(renderer), block.number)
+            )
+        );
     }
 
-    /// @notice The lines packages/playground reads (see its src/config.ts) to show this collection.
+    /// @notice The lines the playground reads (packages/core/src/config.ts, prefix VITE_) to show this collection.
     function envBlock(uint256 chainId, address proofkin, address renderer, uint256 fromBlock)
         public
         pure
         returns (string memory)
     {
-        string memory chain =
-            chainId == BASE ? "base" : chainId == BASE_SEPOLIA ? "baseSepolia" : "anvil";
+        return _envBlock("VITE_", chainId, proofkin, renderer, fromBlock);
+    }
+
+    /// @notice The same settings for the Next.js app (packages/web/src/config/env.ts, prefix NEXT_PUBLIC_).
+    function nextEnvBlock(uint256 chainId, address proofkin, address renderer, uint256 fromBlock)
+        public
+        pure
+        returns (string memory)
+    {
+        return _envBlock("NEXT_PUBLIC_", chainId, proofkin, renderer, fromBlock);
+    }
+
+    function _envBlock(
+        string memory prefix,
+        uint256 chainId,
+        address proofkin,
+        address renderer,
+        uint256 fromBlock
+    ) private pure returns (string memory) {
+        string memory chain = chainId == BASE
+            ? "base"
+            : chainId == BASE_SEPOLIA ? "baseSepolia" : "anvil";
         return string.concat(
-            "VITE_CHAIN=",
+            prefix,
+            "CHAIN=",
             chain,
-            "\nVITE_PROOFKIN=",
+            "\n",
+            prefix,
+            "PROOFKIN=",
             vm.toString(proofkin),
-            "\nVITE_RENDERER=",
+            "\n",
+            prefix,
+            "RENDERER=",
             vm.toString(renderer),
-            "\nVITE_DEPLOY_BLOCK=",
+            "\n",
+            prefix,
+            "DEPLOY_BLOCK=",
             vm.toString(fromBlock)
         );
     }

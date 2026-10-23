@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type AppConfig, parseConfig } from "../src/config.ts";
+import { type AppConfig, parseConfig } from "@proofkin/core";
 import { connectWallet, type Eip1193 } from "../src/wallet.ts";
 
 const ACCOUNT = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";

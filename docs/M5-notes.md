@@ -80,7 +80,8 @@ forge verify-contract 0x<proofkin> contracts/src/Proofkin.sol:Proofkin --chain b
 ```
 
 d. Paste the block the script printed into `packages/playground/.env.local` and add
-   `VITE_RPC_URL=$BASE_SEPOLIA_RPC_URL`. The same file configures the page (`pnpm dev:playground`).
+   `VITE_RPC_URL=$BASE_SEPOLIA_RPC_URL`. The same file configures the page (`pnpm dev:playground`). The script prints the
+   `NEXT_PUBLIC_*` version for the Next.js app too (`packages/web/.env.local`, with `NEXT_PUBLIC_RPC_URL`).
 
 ```bash
 # e. The dry run: one mint per puzzle. The key stays in your shell.

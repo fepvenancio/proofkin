@@ -1,8 +1,5 @@
 // The gallery: every token, newest first, and a leaderboard per puzzle.
-import { readCollection } from "../chain.ts";
-import { shortAddress } from "../format.ts";
-import { fetchSolved, fetchToken, type LeaderboardEntry, leaderboards, type TokenView } from "../gallery.ts";
-import { PUZZLE_HUES, PUZZLE_INFO } from "../puzzleInfo.ts";
+import { type LeaderboardEntry, PUZZLE_HUES, PUZZLE_INFO, type TokenView, fetchSolved, fetchToken, leaderboards, readCollection, shortAddress } from "@proofkin/core";
 import type { App } from "./app.ts";
 import { fill, h } from "./dom.ts";
 

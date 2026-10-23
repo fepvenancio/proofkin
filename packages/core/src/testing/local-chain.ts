@@ -86,7 +86,7 @@ export async function startAnvil(opts: { port?: number; blockTimeSeconds?: numbe
 }
 
 const artifact = (name: string) =>
-  JSON.parse(readFileSync(new URL(`../../../out/${name}.sol/${name}.json`, import.meta.url), "utf8")) as {
+  JSON.parse(readFileSync(new URL(`../../../../out/${name}.sol/${name}.json`, import.meta.url), "utf8")) as {
     abi: Abi;
     bytecode: { object: Hex };
   };

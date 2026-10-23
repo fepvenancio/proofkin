@@ -1,7 +1,7 @@
 import { parseEther } from "viem";
 import { describe, expect, it } from "vitest";
 import { proofkinAbi } from "../src/abi.ts";
-import { makeKit } from "./kit.ts";
+import { makeKit } from "../src/testing/kit.ts";
 
 const kit = await makeKit();
 

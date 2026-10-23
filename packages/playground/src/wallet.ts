@@ -1,6 +1,8 @@
 // Connecting a browser wallet (any EIP-1193 provider) and putting it on the right network.
-import { type Account, type Address, type Chain, createWalletClient, custom, getAddress, toHex, type Transport, type WalletClient } from "viem";
-import type { AppConfig } from "./config.ts";
+import type { AppConfig, Wallet } from "@proofkin/core";
+import { type Address, createWalletClient, custom, getAddress, toHex } from "viem";
+
+export type { Wallet };
 
 export interface Eip1193 {
   request(args: { method: string; params?: unknown }): Promise<unknown>;
@@ -37,9 +39,6 @@ async function ensureNetwork(provider: Eip1193, config: AppConfig): Promise<void
     await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId }] });
   }
 }
-
-/** A wallet client that is tied to an account, so it can send transactions. */
-export type Wallet = WalletClient<Transport, Chain, Account>;
 
 export async function connectWallet(provider: Eip1193, config: AppConfig): Promise<{ account: Address; walletClient: Wallet }> {
   let accounts: unknown;

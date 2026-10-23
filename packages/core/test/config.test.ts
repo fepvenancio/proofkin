@@ -66,3 +66,37 @@ describe("parseConfig", () => {
     if (!r.ok) expect(r.problems[0]).toMatch(/VITE_CHAIN.*anvil.*baseSepolia.*base/);
   });
 });
+
+describe("parseConfig under another prefix", () => {
+  // Vite calls its variables VITE_*; a Next.js app exposes NEXT_PUBLIC_* to the browser. The settings are the same.
+  const next = { NEXT_PUBLIC_CHAIN: "baseSepolia", NEXT_PUBLIC_PROOFKIN: PROOFKIN, NEXT_PUBLIC_RENDERER: RENDERER };
+
+  it("reads every setting under the prefix it is given", () => {
+    const r = parseConfig(
+      { ...next, NEXT_PUBLIC_DEPLOY_BLOCK: "777", NEXT_PUBLIC_RPC_URL: "https://rpc.example/k", NEXT_PUBLIC_BLOCK_TIME: "4" },
+      "NEXT_PUBLIC_",
+    );
+    if (!r.ok) throw new Error(r.problems.join("; "));
+    expect(r.config).toMatchObject({ name: "baseSepolia", proofkin: PROOFKIN, renderer: RENDERER, deployBlock: 777n, rpcUrl: "https://rpc.example/k", blockTimeSeconds: 4 });
+  });
+
+  it("does not read the default prefix when another is asked for", () => {
+    const r = parseConfig({ ...base, VITE_DEPLOY_BLOCK: "5" }, "NEXT_PUBLIC_");
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.problems.join("\n")).not.toMatch(/VITE_/);
+  });
+
+  it("names the prefixed variables when something is wrong", () => {
+    const r = parseConfig({ NEXT_PUBLIC_CHAIN: "mainnet", NEXT_PUBLIC_DEPLOY_BLOCK: "x", NEXT_PUBLIC_BLOCK_TIME: "0" }, "NEXT_PUBLIC_");
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    const text = r.problems.join("\n");
+    for (const name of ["CHAIN", "PROOFKIN", "RENDERER", "DEPLOY_BLOCK", "BLOCK_TIME"]) expect(text).toMatch(new RegExp(`NEXT_PUBLIC_${name}`));
+    expect(text).not.toMatch(/VITE_/);
+  });
+
+  it("still reads VITE_ when no prefix is given", () => {
+    expect(parseConfig(base).ok).toBe(true);
+    expect(parseConfig(next).ok).toBe(false);
+  });
+});

@@ -19,7 +19,9 @@ deploy script and `pnpm launch:dry-run`.
 |---|---|
 | `contracts/` | Solidity (Foundry): `VM`, `Puzzles`, `Renderer`, `Proofkin`, and their tests |
 | `packages/vm/` | TypeScript reference VM, assembler and fixture generator |
-| `packages/playground/` | The web app: write a program, test it, watch it drawn, mint it, browse the gallery |
+| `packages/core/` | What the apps share: config, chain reads, the mint flow, phases, storage, puzzle texts, the generated ABI |
+| `packages/playground/` | The first web page, with no framework: write a program, test it, watch it drawn, mint it, browse the gallery |
+| `packages/web/` | The Next.js app (in progress): server components read the chain, RainbowKit connects wallets |
 | `fixtures/` | Differential test vectors, the solution circuits, SVG snapshots |
 | `tools/` | Mutation testing and fixture helpers |
 
@@ -42,6 +44,10 @@ pnpm dev:chain          # Anvil with a block a second, both contracts deployed, 
 pnpm dev:playground     # then open http://localhost:5173
 ```
 
+The Next.js app reads the same local chain (`pnpm dev:chain` writes its `.env.local` too): `pnpm dev:web`, then open
+http://localhost:3000.
+
 More in [docs/M4-notes.md](docs/M4-notes.md). Launching, and what it needs from the owner: [docs/M5-notes.md](docs/M5-notes.md).
+The frontend: [docs/FRONTEND.md](docs/FRONTEND.md) (conventions) and [docs/F1-notes.md](docs/F1-notes.md).
 
 Needs Foundry and Node 22 or later.

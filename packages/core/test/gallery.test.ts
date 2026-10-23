@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import { type SolvedRow, decodeTokenUri, fetchSolved, fetchToken, leaderboards } from "../src/gallery.ts";
 import { type MintDeps, prepareCommit, sendCommit, sendReveal } from "../src/mint.ts";
 import { PendingStore } from "../src/storage.ts";
-import { isolateChain, makeKit, padVariant, programOf, solutionText } from "./kit.ts";
-import { MemoryStorage } from "./memoryStorage.ts";
+import { isolateChain, makeKit, padVariant, programOf, solutionText } from "../src/testing/kit.ts";
+import { MemoryStorage } from "../src/testing/memoryStorage.ts";
 
 const SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>';
 const b64 = (s: string) => Buffer.from(s).toString("base64");

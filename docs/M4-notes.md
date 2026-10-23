@@ -1,5 +1,7 @@
 # Milestone 4 notes
 
+*Since the frontend's first step ([F1-notes.md](F1-notes.md)) the framework-free modules listed below live in `packages/core`, with their tests; the playground keeps its UI, the wallet connection, `dev-chain` and the dry run. File names in this record are as they were.*
+
 The playground (PLAN.md §9): `packages/playground`, a static site built with Vite, TypeScript and viem. No
 backend, no framework.
 

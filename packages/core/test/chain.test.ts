@@ -3,8 +3,8 @@ import { hexToBytes, parseEther } from "viem";
 import { describe, expect, it } from "vitest";
 import { proofkinAbi } from "../src/abi.ts";
 import { commitHash, newSalt, programHash } from "../src/commitment.ts";
-import { checkProgram, commitBlockOf, currentBlock, previewSvg, readCollection } from "../src/chain.ts";
-import { isolateChain, makeKit, programOf, solutionText, swapVariant } from "./kit.ts";
+import { checkProgram, commitBlockOf, currentBlock, NO_SOLUTION_YET, previewSvg, readCollection } from "../src/chain.ts";
+import { isolateChain, makeKit, programOf, solutionText, swapVariant } from "../src/testing/kit.ts";
 
 const kit = await makeKit();
 isolateChain(kit);
@@ -38,8 +38,9 @@ describe("readCollection", () => {
       mintPrice: parseEther("0.01"),
       totalSupply: 0n,
       solvedCount: [0, 0, 0, 0, 0, 0],
-      bestNodes: [255, 255, 255, 255, 255, 255],
+      bestNodes: Array(6).fill(NO_SOLUTION_YET),
     });
+    expect(NO_SOLUTION_YET).toBe(255);
   });
 
   it("follows a mint", async () => {

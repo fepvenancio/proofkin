@@ -1,7 +1,7 @@
 // `pnpm dev:chain`: a local chain with the contracts deployed, wired into the playground via .env.local.
 // Blocks arrive every second so a reveal window can be watched in the browser. Ctrl-C stops it.
 import { writeFileSync } from "node:fs";
-import { deployContracts, startAnvil } from "./local-chain.ts";
+import { deployContracts, startAnvil } from "@proofkin/core/testing";
 
 const chain = await startAnvil({ port: 8545, blockTimeSeconds: 1 });
 const d = await deployContracts(chain.rpcUrl);
@@ -17,10 +17,22 @@ const env = [
 ].join("\n");
 writeFileSync(new URL("../.env.local", import.meta.url), env);
 
+// The Next.js app reads the same deployment under its own prefix.
+const nextEnv = [
+  "# Written by `pnpm dev:chain`. Local only; ignored by git.",
+  "NEXT_PUBLIC_CHAIN=anvil",
+  `NEXT_PUBLIC_RPC_URL=${chain.rpcUrl}`,
+  `NEXT_PUBLIC_PROOFKIN=${d.proofkin}`,
+  `NEXT_PUBLIC_RENDERER=${d.renderer}`,
+  `NEXT_PUBLIC_DEPLOY_BLOCK=${d.deployBlock}`,
+  "",
+].join("\n");
+writeFileSync(new URL("../../web/.env.local", import.meta.url), nextEnv);
+
 console.log(`anvil      ${chain.rpcUrl}  (chain id 31337, a block every second)`);
 console.log(`Proofkin   ${d.proofkin}  (mint price 0.01 ETH)`);
 console.log(`Renderer   ${d.renderer}`);
-console.log("wrote packages/playground/.env.local. Now run `pnpm --filter @proofkin/playground dev`.");
+console.log("wrote packages/playground/.env.local and packages/web/.env.local. Now run `pnpm dev:playground` or `pnpm dev:web`.");
 
 const stop = async () => {
   await chain.stop();

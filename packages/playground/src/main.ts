@@ -1,10 +1,7 @@
 import "@fontsource-variable/newsreader";
 import "@fontsource-variable/jetbrains-mono";
 import "./styles.css";
-import { makePublicClient } from "./chain.ts";
-import { type AppConfig, parseConfig } from "./config.ts";
-import { shortAddress } from "./format.ts";
-import { PendingStore } from "./storage.ts";
+import { type AppConfig, PendingStore, makePublicClient, parseConfig, shortAddress } from "@proofkin/core";
 import { connectWallet, type Eip1193 } from "./wallet.ts";
 import type { App } from "./ui/app.ts";
 import { fill, h } from "./ui/dom.ts";

@@ -1,13 +1,5 @@
 // The solve page: read the puzzle, write the program, test it, watch it drawn, mint it.
-import { type Analysis, analyze, skeletonFor } from "../analyze.ts";
-import { type CollectionState, checkProgram, type ProgramStatus, previewSvg, readCollection } from "../chain.ts";
-import { describeTrial, formatDuration, formatEth, labelledInputs, slotsLeft } from "../format.ts";
-import { type LocalTestReport, randomSeed, runLocalTest } from "../localTest.ts";
-import { friendlyError, type MintDeps, prepareCommit, reconcile, sendCommit, sendReveal } from "../mint.ts";
-import { mintGate } from "../mintGate.ts";
-import { etaSeconds, REVEAL_DELAY, revealPhase } from "../phase.ts";
-import { gridDiagramSvg, PUZZLE_HUES, PUZZLE_INFO } from "../puzzleInfo.ts";
-import type { PendingCommit } from "../storage.ts";
+import { type Analysis, type CollectionState, type LocalTestReport, type MintDeps, PUZZLE_HUES, PUZZLE_INFO, type PendingCommit, type ProgramStatus, REVEAL_DELAY, analyze, checkProgram, describeTrial, etaSeconds, formatDuration, formatEth, friendlyError, gridDiagramSvg, labelledInputs, mintGate, prepareCommit, previewSvg, randomSeed, readCollection, reconcile, revealPhase, runLocalTest, sendCommit, sendReveal, skeletonFor, slotsLeft } from "@proofkin/core";
 import type { App } from "./app.ts";
 import { type Child, fill, h, svgDataUri, trustedSvg } from "./dom.ts";
 

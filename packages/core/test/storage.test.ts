@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { type PendingCommit, PendingStore, type StorageLike } from "../src/storage.ts";
-import { MemoryStorage } from "./memoryStorage.ts";
+import { MemoryStorage } from "../src/testing/memoryStorage.ts";
 
 const ALICE = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
 const BOB = "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC";

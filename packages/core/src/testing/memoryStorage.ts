@@ -1,4 +1,4 @@
-import type { StorageLike } from "../src/storage.ts";
+import type { StorageLike } from "../storage.ts";
 
 /** A Map-backed stand-in for window.localStorage. */
 export class MemoryStorage implements StorageLike {

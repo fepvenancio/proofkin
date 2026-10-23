@@ -3,12 +3,12 @@ import { readFileSync } from "node:fs";
 import { type Account, type Address, type Chain, createPublicClient, createTestClient, createWalletClient, type Hex, http, type PublicClient, type Transport, type WalletClient } from "viem";
 import { foundry } from "viem/chains";
 import { afterAll, afterEach, beforeEach } from "vitest";
-import { analyze } from "../src/analyze.ts";
-import { type AppConfig, parseConfig } from "../src/config.ts";
-import { deployContracts, startAnvil } from "../scripts/local-chain.ts";
+import { analyze } from "../analyze.ts";
+import { type AppConfig, parseConfig } from "../config.ts";
+import { deployContracts, startAnvil } from "./local-chain.ts";
 
 export const solutionText = (name: string) =>
-  readFileSync(new URL(`../../../fixtures/solutions/${name}.pk`, import.meta.url), "utf8");
+  readFileSync(new URL(`../../../../fixtures/solutions/${name}.pk`, import.meta.url), "utf8");
 
 /** A fixture solution (or an edited copy of its text) as the bytes the contract takes. */
 export function programOf(text: string): { program: Uint8Array; hex: Hex; puzzleId: number; nodeCount: number } {

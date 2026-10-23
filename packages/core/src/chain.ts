@@ -9,6 +9,8 @@ export type Reader = PublicClient<Transport, Chain | undefined>;
 /** Slots per puzzle (PLAN.md §4). */
 export const SLOTS_PER_PUZZLE = 50;
 export const PUZZLES = 6;
+/** What `bestNodes` holds for a puzzle nobody has solved yet. */
+export const NO_SOLUTION_YET = 255;
 
 export function makePublicClient(config: AppConfig): Reader {
   return createPublicClient({ chain: config.chain, transport: http(config.rpcUrl), pollingInterval: config.pollingIntervalMs });

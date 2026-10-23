@@ -144,7 +144,7 @@ contract DeployTest is ProofkinBase {
 
     // ------------------------------------------------- what it prints for the playground
 
-    /// The playground reads exactly these names (packages/playground/src/config.ts); a test there
+    /// The playground reads exactly these names (packages/core/src/config.ts, prefix VITE_); a test there
     /// parses the same text.
     function test_theEnvBlockIsWhatTheCollectionNeedsToBeShownInThePlayground() public view {
         assertEq(
@@ -172,6 +172,29 @@ contract DeployTest is ProofkinBase {
                 "VITE_PROOFKIN=0x5FbDB2315678afecb367f032d93F642f64180aa3\n",
                 "VITE_RENDERER=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512\n",
                 "VITE_DEPLOY_BLOCK=5"
+            )
+        );
+    }
+
+    /// The Next.js app reads the same settings under NEXT_PUBLIC_ (packages/web/src/config/env.ts); a test
+    /// there parses this very text.
+    function test_theNextEnvBlockIsTheSameSettingsUnderTheNextPublicPrefix() public view {
+        assertEq(
+            script.nextEnvBlock(BASE_SEPOLIA, PROOFKIN, RENDERER, 123),
+            string.concat(
+                "NEXT_PUBLIC_CHAIN=baseSepolia\n",
+                "NEXT_PUBLIC_PROOFKIN=0x5FbDB2315678afecb367f032d93F642f64180aa3\n",
+                "NEXT_PUBLIC_RENDERER=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512\n",
+                "NEXT_PUBLIC_DEPLOY_BLOCK=123"
+            )
+        );
+        assertEq(
+            script.nextEnvBlock(BASE, PROOFKIN, RENDERER, 45_000_000),
+            string.concat(
+                "NEXT_PUBLIC_CHAIN=base\n",
+                "NEXT_PUBLIC_PROOFKIN=0x5FbDB2315678afecb367f032d93F642f64180aa3\n",
+                "NEXT_PUBLIC_RENDERER=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512\n",
+                "NEXT_PUBLIC_DEPLOY_BLOCK=45000000"
             )
         );
     }
