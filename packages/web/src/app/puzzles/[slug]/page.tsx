@@ -47,6 +47,12 @@ export default async function Page({ params }: Props) {
       <p className="mt-3 max-w-prose text-lg">{puzzle.summary}</p>
       <p className="mt-2 max-w-prose text-graphite">{puzzle.rule}</p>
 
+      <p className="mt-6">
+        <Link href={paths.solve(id)} className="inline-block rounded-[2px] bg-ink px-5 py-2.5 text-paper">
+          {`Solve ${puzzle.name}`}
+        </Link>
+      </p>
+
       <div className="mt-8">
         <SlotStrip
           puzzleId={id}

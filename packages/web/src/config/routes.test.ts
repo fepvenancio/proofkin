@@ -54,9 +54,15 @@ describe("parseTokenId", () => {
     }
   });
 
-  it("does not need the supply when the caller checks it elsewhere", () => {
+  it("does not need the supply, which may be a minute old: the most the collection can hold is the bound", () => {
     expect(parseTokenId("250")).toBe(250);
+    expect(parseTokenId("300")).toBe(300);
     expect(parseTokenId("0")).toBeUndefined();
+  });
+
+  it("refuses an id the collection can never hold: 6 puzzles of 50 slots make 300", () => {
+    expect(parseTokenId("301")).toBeUndefined();
+    expect(parseTokenId("9999")).toBeUndefined();
   });
 });
 
@@ -110,6 +116,7 @@ describe("paths", () => {
     expect(paths.token(7)).toBe("/token/7");
     expect(paths.art(7)).toBe("/token/7/art");
     expect(paths.puzzle(3)).toBe("/puzzles/grid-path");
+    expect(paths.solve(3)).toBe("/puzzles/grid-path/solve");
   });
 
   it("leaves the default out of the gallery address", () => {
@@ -131,6 +138,7 @@ describe("currentSection", () => {
   it("puts the home page and the puzzle pages under Puzzles", () => {
     expect(currentSection("/")).toBe("puzzles");
     expect(currentSection("/puzzles/sort8")).toBe("puzzles");
+    expect(currentSection("/puzzles/sort8/solve")).toBe("puzzles");
   });
 
   it("puts the gallery and the token pages under Gallery", () => {

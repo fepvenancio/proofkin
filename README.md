@@ -45,11 +45,11 @@ pnpm dev:playground     # then open http://localhost:5173
 ```
 
 The Next.js app reads the same local chain (`pnpm dev:chain` writes its `.env.local` too): `pnpm dev:web`, then open
-http://localhost:3000. With nothing minted it shows an empty plate; `PRIVATE_KEY=<an Anvil test key> pnpm launch:dry-run`
+http://localhost:3000. With nothing minted it shows an empty plate; `/puzzles/sort8/solve` is where a program is written, tested and drawn; `PRIVATE_KEY=<an Anvil test key> pnpm launch:dry-run`
 mints the six fixture solutions so there is something to look at.
 
 More in [docs/M4-notes.md](docs/M4-notes.md). Launching, and what it needs from the owner: [docs/M5-notes.md](docs/M5-notes.md).
 The frontend: [docs/FRONTEND.md](docs/FRONTEND.md) (conventions), [docs/DESIGN.md](docs/DESIGN.md) (how it looks), and the notes
-on each step: [docs/F1-notes.md](docs/F1-notes.md), [docs/F2-notes.md](docs/F2-notes.md).
+on each step: [docs/F1-notes.md](docs/F1-notes.md), [docs/F2-notes.md](docs/F2-notes.md), [docs/F3a-notes.md](docs/F3a-notes.md).
 
 Needs Foundry and Node 22 or later.

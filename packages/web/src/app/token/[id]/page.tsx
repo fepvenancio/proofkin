@@ -24,9 +24,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 /**
  * @notice One token: its art large, its traits, who solved it and who owns it.
- * @dev (1) The supply is checked before anything is rendered, so an id nobody has minted is "not found" without a
- * call that renders. (2) The solver comes from the `Solved` events and never changes; the owner is read live, because
- * tokens move. (3) It shows no program: the puzzles are the game, and the page should not hand out solutions.
+ * @dev (1) An id above the 300 the collection can hold is "not found" without a read; below that the contract says
+ * whether the token exists, not the cached supply, which may be a minute old and would 404 a token minted a moment ago.
+ * (2) The solver comes from the `Solved` events and never changes; the owner is read live, because tokens move.
+ * (3) It shows no program: the puzzles are the game, and the page should not hand out solutions.
  * @param props - `params`: the token id.
  */
 export default async function Page({ params }: Props) {
@@ -36,7 +37,6 @@ export default async function Page({ params }: Props) {
   const app = requireAppConfig();
   const site = await getSite(app);
   if (!site) return <CollectionUnavailable chainName={app.chain.name} />;
-  if (id > site.collection.totalSupply) notFound();
 
   const result = await getTokenDetail(app, id);
   if (result.kind === "missing") notFound();

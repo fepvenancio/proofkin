@@ -3,6 +3,10 @@
 The first real pages of `packages/web`, built from the chain on the server. Nothing here sends a transaction or depends
 on a connected wallet. How it looks is in [DESIGN.md](DESIGN.md); the conventions are in [FRONTEND.md](FRONTEND.md).
 
+> **Corrected in F3a.** The art route and the token page no longer decide whether a token exists from the cached supply (it
+> could 404 a token minted a moment ago); the contract does, below the collection's capacity of 300. See
+> [F3a-notes.md](F3a-notes.md). The measurements and the cache paragraph below describe F2 as it was.
+
 ## What there is
 
 | Address | Page |

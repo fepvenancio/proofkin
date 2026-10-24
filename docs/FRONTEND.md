@@ -20,11 +20,12 @@ app/          routes. Server components by default; the root layout and the prov
 components/   presentation. No data fetching: they take what was already read.
 config/       the one place settings are read (env.ts), and the wagmi configuration.
 chain/        server-only reads of the chain. Every file here says `import "server-only"`.
+features/     one folder per flow (`features/solve/`): its hooks, pure view functions and components, and the one island that
+              joins them. A page imports the island and the statement, nothing deeper.
 model/        the shapes the pages share (JSON-safe `type`s) and pure wording, kept out of `chain/` so a component can use them without reaching a server-only module.
 ```
 
-Added when first needed, not before: `features/<name>/` (hooks, pure resolvers and components of one flow),
-`config/queryKeys.ts`, `contracts/`.
+Added when first needed, not before: `contracts/`. (`features/solve/` and `config/queryKeys.ts` came with F3a.)
 
 ## The server/client rule
 
@@ -58,6 +59,13 @@ More rules, each pinned by its own tests:
   return JSON: the types refuse a `bigint`, so the price travels as a string of wei. Reads made at the same moment are
   one JSON-RPC batch. Pages build every list from the `Solved` events and never render a token to draw a list; the art is
   its own address (`/token/[id]/art`), loaded as the plates scroll into view.
+- **Browser-only state is read after hydration, behind a mount gate** (`useMounted`). A client component that needs
+  storage or randomness draws only its frame on the server and while the browser hydrates, and mounts the part that needs
+  them afterwards, so the first browser render matches the server's and nothing sets state in an effect to get there. The
+  solve island's server-render tests hold it.
+- **A result belongs to what it was about.** A test result is kept with the text it was run on and compared to the text on
+  screen, not cleared by an effect, and the page speaks only of the program on the screen: until an edit has settled, a
+  query's answer is about an earlier one and is not shown.
 - **A token that does not exist is a 404, not a 200.** No route that can say "not found" has a `loading` file above it:
   it would make Next.js send the shell before the page has read anything, and `notFound()` would then be a 200 with
   `noindex`. `test/status.test.ts` holds it.

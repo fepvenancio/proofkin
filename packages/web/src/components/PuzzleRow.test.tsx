@@ -9,6 +9,11 @@ describe("PuzzleRow", () => {
     expect(screen.getByRole("link", { name: "GRID_PATH" })).toHaveAttribute("href", "/puzzles/grid-path");
   });
 
+  it("offers to solve it, which is what the visitor came to do", () => {
+    render(<PuzzleRow puzzleId={3} solved={0} best={255} recordRanks={[]} />);
+    expect(screen.getByRole("link", { name: "Solve GRID_PATH" })).toHaveAttribute("href", "/puzzles/grid-path/solve");
+  });
+
   it("says in a sentence what the puzzle asks", () => {
     render(<PuzzleRow puzzleId={2} solved={0} best={255} recordRanks={[]} />);
     expect(screen.getByText(/Eight numbers in: the same eight, smallest first\./)).toBeInTheDocument();

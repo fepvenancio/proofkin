@@ -1,4 +1,4 @@
-import { PUZZLE_INFO } from "@proofkin/core";
+import { PUZZLE_INFO, SLOTS_PER_PUZZLE } from "@proofkin/core";
 
 /* //////////////////////////////////////////////////////////////
                               PUZZLES
@@ -34,18 +34,22 @@ export function puzzleFromSlug(slug: string): number | undefined {
 /** Plain digits with no sign, no leading zero and at most nine of them, so a number is spelled one way. */
 const WHOLE_NUMBER = /^[1-9]\d{0,8}$/;
 
+/** The most tokens the collection can ever hold: 6 puzzles of 50 slots. */
+export const MAX_TOKEN_ID = SLOTS_PER_PUZZLE * PUZZLE_INFO.length;
+
 /**
  * @notice The token an address segment names.
- * @dev Token ids start at 1 and the supply is 300, so an id above what has been minted is a token that does not exist
- * yet, and is refused the same way as one that never will.
+ * @dev (1) Token ids start at 1 and the collection holds at most 300, so anything above that is refused without asking
+ * anyone. (2) Whether a token below that exists is the contract's to say, not a cached supply's: the supply may be a
+ * minute old, and a token minted a moment ago must not be a 404.
  * @param raw - A path segment.
- * @param totalSupply - How many tokens exist; leave it out when the caller checks that elsewhere.
+ * @param bound - The highest id to accept; the collection's capacity unless a caller knows better.
  * @returns The id, or undefined.
  */
-export function parseTokenId(raw: string, totalSupply = Number.MAX_SAFE_INTEGER): number | undefined {
+export function parseTokenId(raw: string, bound = MAX_TOKEN_ID): number | undefined {
   if (!WHOLE_NUMBER.test(raw)) return undefined;
   const id = Number(raw);
-  return id <= totalSupply ? id : undefined;
+  return id <= bound ? id : undefined;
 }
 
 /* //////////////////////////////////////////////////////////////
@@ -117,6 +121,7 @@ export const paths = {
     return query ? `/gallery?${query}` : "/gallery";
   },
   puzzle: (id: number) => `/puzzles/${puzzleSlug(id)}`,
+  solve: (id: number) => `/puzzles/${puzzleSlug(id)}/solve`,
   token: (id: number) => `/token/${id}`,
   art: (id: number) => `/token/${id}/art`,
 };

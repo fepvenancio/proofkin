@@ -40,6 +40,11 @@ export function PuzzleRow({
           </Link>
         </h3>
         <p className="mt-1 max-w-prose text-graphite">{puzzle.summary}</p>
+        <p className="mt-2">
+          <Link href={paths.solve(puzzleId)} className="underline underline-offset-4">
+            {`Solve ${puzzle.name}`}
+          </Link>
+        </p>
       </div>
       <div className="grid content-start gap-2">
         <SlotStrip puzzleId={puzzleId} solved={solved} best={smallest} recordRanks={recordRanks} />

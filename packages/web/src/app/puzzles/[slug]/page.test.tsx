@@ -66,6 +66,11 @@ describe("a puzzle's page", () => {
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
   });
 
+  it("offers to solve the puzzle, above its leaderboard", async () => {
+    render(await open("sort8"));
+    expect(screen.getByRole("link", { name: "Solve SORT8" })).toHaveAttribute("href", "/puzzles/sort8/solve");
+  });
+
   it("links to the puzzle's plates in the gallery", async () => {
     render(await open("sort8"));
     expect(screen.getByRole("link", { name: "See SORT8 in the gallery" })).toHaveAttribute(
