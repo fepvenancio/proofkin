@@ -1,13 +1,72 @@
 @import "tailwindcss";
-@import "@fontsource-variable/newsreader";
-@import "@fontsource-variable/jetbrains-mono";
 
-/* Placeholder: the design pass (colours, type, the per-puzzle hue) comes with the first real pages. */
-:root {
-  --font-serif: "Newsreader Variable", Georgia, serif;
-  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+/* The plate album: pale paper, with every token mounted on it as a dark plate. The art is the only light on the page,
+   and the six puzzle hues are the only colour. docs/DESIGN.md says why; design.test.ts holds the contrast. */
+
+@theme {
+  --color-paper: #eceef1;
+  --color-plate: #0a0d14;
+  --color-ink: #171b2a;
+  --color-graphite: #586072;
+  --color-rule: #cbd0d8;
+  /* The ring on the smallest solution of a puzzle. */
+  --color-record: #a87d12;
+
+  --font-sans: var(--font-recursive), ui-sans-serif, system-ui, sans-serif;
 }
 
-body {
-  font-family: var(--font-serif);
+:root {
+  color-scheme: light;
+
+  /* A puzzle's hue is set per element as --h. Text on paper, a slot mark on paper, and text on a plate each need their
+     own saturation and lightness to stay readable in all six hues. */
+  --puzzle-ink-s: 70%;
+  --puzzle-ink-l: 28%;
+  --puzzle-mark-s: 70%;
+  --puzzle-mark-l: 35%;
+  --puzzle-glow-s: 74%;
+  --puzzle-glow-l: 70%;
+}
+
+@utility text-puzzle {
+  color: hsl(var(--h) var(--puzzle-ink-s) var(--puzzle-ink-l));
+}
+
+@utility text-puzzle-glow {
+  color: hsl(var(--h) var(--puzzle-glow-s) var(--puzzle-glow-l));
+}
+
+@utility bg-puzzle-mark {
+  background-color: hsl(var(--h) var(--puzzle-mark-s) var(--puzzle-mark-l));
+}
+
+@utility border-puzzle-glow {
+  border-color: hsl(var(--h) var(--puzzle-glow-s) var(--puzzle-glow-l));
+}
+
+/* Recursive has one skeleton for prose and for code. Prose uses its proportional setting; an address, which a person
+   reads character by character, uses the monospaced one. */
+@utility font-address {
+  font-variation-settings: "MONO" 1;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-variation-settings:
+      "MONO" 0,
+      "CASL" 0;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+
+  /* RainbowKit sets its own font stack on everything it draws. */
+  [data-rk] {
+    font-family: var(--font-sans);
+  }
 }

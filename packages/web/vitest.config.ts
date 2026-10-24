@@ -18,6 +18,8 @@ export default defineConfig({
     environment: "jsdom",
     include: ["src/**/*.test.{ts,tsx}", "test/**/*.test.{ts,tsx}"],
     setupFiles: ["./vitest.setup.ts"],
-    clearMocks: true,
+    // A value queued with `mockResolvedValueOnce` that a test never consumed (it threw `notFound()` first) must not
+    // answer the next test.
+    mockReset: true,
   },
 });

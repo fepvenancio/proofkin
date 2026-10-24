@@ -88,6 +88,12 @@ describe("leaderboards", () => {
     const [board] = leaderboards([row(2, 0, 17, 2)]);
     expect(board![0]).toEqual({ tokenId: 2, author: row(2, 0, 17, 2).author, nodeCount: 17, rank: 2, holdsRecord: true });
   });
+
+  it("does not need the block a solution was minted in, so a cache can hold rows without it", () => {
+    const { blockNumber: _block, ...cached } = row(2, 0, 17, 2);
+    const [board] = leaderboards([cached]);
+    expect(board).toHaveLength(1);
+  });
 });
 
 describe("reading a real collection", async () => {

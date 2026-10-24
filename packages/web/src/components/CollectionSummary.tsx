@@ -1,13 +1,15 @@
-import { type CollectionState, formatEth, NO_SOLUTION_YET, PUZZLE_INFO, SLOTS_PER_PUZZLE } from "@proofkin/core";
+import { formatEth, NO_SOLUTION_YET, PUZZLE_INFO, SLOTS_PER_PUZZLE } from "@proofkin/core";
+
+import { type CollectionData } from "@/model/data";
 
 /**
  * @notice The state of the collection at a glance: the chain, the price, how much is solved, and each puzzle.
  * @dev Presentation only. It takes what was already read, so it renders the same on the server and in a test, and the
  * page decides where the read happens. The record per puzzle is the smallest solution minted so far.
  * @param props - `chainName`: the chain's display name, as the wallet shows it. `state`: the collection as
- * `readCollection` returned it.
+ * `getCollection` returned it.
  */
-export function CollectionSummary({ chainName, state }: { chainName: string; state: CollectionState }) {
+export function CollectionSummary({ chainName, state }: { chainName: string; state: CollectionData }) {
   const capacity = SLOTS_PER_PUZZLE * PUZZLE_INFO.length;
   return (
     <section>
@@ -15,7 +17,7 @@ export function CollectionSummary({ chainName, state }: { chainName: string; sta
         <dt>Chain</dt>
         <dd>{chainName}</dd>
         <dt>Price</dt>
-        <dd>{formatEth(state.mintPrice)}</dd>
+        <dd>{formatEth(BigInt(state.mintPrice))}</dd>
         <dt>Solved</dt>
         <dd>{`${state.totalSupply} of ${capacity}`}</dd>
       </dl>

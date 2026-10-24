@@ -2,13 +2,14 @@ import { type CollectionState, readCollection } from "@proofkin/core";
 import { HttpRequestError } from "viem";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { tryReadCollection } from "@/chain/collection";
+import { getCollection } from "@/chain/collection";
 import { requireAppConfig } from "@/config/env";
 
 vi.mock("@proofkin/core", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@proofkin/core")>()),
   readCollection: vi.fn(),
 }));
+vi.mock("next/cache", () => ({ unstable_cache: (read: () => Promise<unknown>) => read }));
 
 const app = requireAppConfig({
   NEXT_PUBLIC_CHAIN: "base",
@@ -23,7 +24,7 @@ const state: CollectionState = {
   bestNodes: [17, 15, 255, 255, 255, 255],
 };
 
-describe("tryReadCollection", () => {
+describe("getCollection", () => {
   let log: ReturnType<typeof vi.spyOn>;
   const logged = () => log.mock.calls.flat().map(String).join(" ");
 
@@ -34,19 +35,30 @@ describe("tryReadCollection", () => {
 
   it("hands back the collection when the chain answers, and logs nothing", async () => {
     vi.mocked(readCollection).mockResolvedValueOnce(state);
-    await expect(tryReadCollection(app, {})).resolves.toBe(state);
+    await expect(getCollection(app, {})).resolves.toEqual({
+      mintPrice: "10000000000000000",
+      totalSupply: 3,
+      solvedCount: [2, 1, 0, 0, 0, 0],
+      bestNodes: [17, 15, 255, 255, 255, 255],
+    });
     expect(vi.mocked(readCollection)).toHaveBeenCalledWith(expect.anything(), app);
     expect(log).not.toHaveBeenCalled();
   });
 
+  it("holds only what a cache can store: the price is a string of wei and the supply a number", async () => {
+    vi.mocked(readCollection).mockResolvedValueOnce(state);
+    const data = await getCollection(app, {});
+    expect(JSON.parse(JSON.stringify(data))).toEqual(data);
+  });
+
   it("returns undefined, rather than throwing, when the chain cannot be read", async () => {
     vi.mocked(readCollection).mockRejectedValueOnce(new Error("boom"));
-    await expect(tryReadCollection(app, {})).resolves.toBeUndefined();
+    await expect(getCollection(app, {})).resolves.toBeUndefined();
   });
 
   it("logs the cause on the server, naming the chain, so the page can stay short", async () => {
     vi.mocked(readCollection).mockRejectedValueOnce(new Error("boom"));
-    await tryReadCollection(app, {});
+    await getCollection(app, {});
     expect(logged()).toContain("Base");
     expect(logged()).toContain("boom");
   });
@@ -61,7 +73,7 @@ describe("tryReadCollection", () => {
     expect(failure.message).toContain("SECRETKEY");
     vi.mocked(readCollection).mockRejectedValueOnce(failure);
 
-    await tryReadCollection(app, {});
+    await getCollection(app, {});
 
     expect(logged()).toContain("HTTP request failed.");
     expect(logged()).toContain("fetch failed");

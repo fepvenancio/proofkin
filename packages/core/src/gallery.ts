@@ -124,7 +124,7 @@ export interface LeaderboardEntry {
 }
 
 /** One list per puzzle: smallest program first, and among equals the earlier solver. */
-export function leaderboards(rows: SolvedRow[]): LeaderboardEntry[][] {
+export function leaderboards(rows: readonly Omit<SolvedRow, "blockNumber">[]): LeaderboardEntry[][] {
   return Array.from({ length: PUZZLES }, (_, puzzleId) => {
     const mine = rows.filter((r) => r.puzzleId === puzzleId).sort((a, b) => a.nodeCount - b.nodeCount || a.rank - b.rank);
     const best = mine[0]?.nodeCount;

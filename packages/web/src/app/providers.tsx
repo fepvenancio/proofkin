@@ -6,6 +6,7 @@ import { type ReactNode, useState } from "react";
 import { type State, WagmiProvider } from "wagmi";
 
 import { getWagmiConfig } from "@/config/wagmi";
+import { walletTheme } from "@/config/walletTheme";
 
 /**
  * @notice Everything a wallet-aware component needs above it: wagmi, the query cache, and the RainbowKit modal.
@@ -21,7 +22,7 @@ export function Providers({ children, initialState }: { children: ReactNode; ini
   return (
     <WagmiProvider config={wagmiConfig} initialState={initialState}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>{children}</RainbowKitProvider>
+        <RainbowKitProvider theme={walletTheme}>{children}</RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

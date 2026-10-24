@@ -1,5 +1,5 @@
 // The gallery: every token, newest first, and a leaderboard per puzzle.
-import { type LeaderboardEntry, PUZZLE_HUES, PUZZLE_INFO, type TokenView, fetchSolved, fetchToken, leaderboards, readCollection, shortAddress } from "@proofkin/core";
+import { type LeaderboardEntry, PUZZLE_HUES, PUZZLE_INFO, type TokenView, fetchSolved, fetchToken, leaderboards, ordinal, readCollection, shortAddress } from "@proofkin/core";
 import type { App } from "./app.ts";
 import { fill, h } from "./dom.ts";
 
@@ -194,11 +194,4 @@ export function mountGallery(root: HTMLElement, app: App): () => void {
     disposed = true;
     if (dialog.open) dialog.close();
   };
-}
-
-/** 1st, 2nd, 3rd, 4th ... 11th, 12th, 13th, 21st. */
-function ordinal(n: number): string {
-  const rest = n % 100;
-  if (rest >= 11 && rest <= 13) return `${n}th`;
-  return `${n}${({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[n % 10] ?? "th"}`;
 }

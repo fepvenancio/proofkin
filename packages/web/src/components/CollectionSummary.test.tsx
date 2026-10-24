@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import { CollectionSummary } from "@/components/CollectionSummary";
 
 const state = {
-  mintPrice: 10n ** 16n,
-  totalSupply: 3n,
+  mintPrice: "10000000000000000",
+  totalSupply: 3,
   solvedCount: [2, 1, 0, 0, 0, 0],
   bestNodes: [17, 15, 255, 255, 255, 255],
 };

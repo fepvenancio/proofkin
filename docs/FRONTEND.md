@@ -1,6 +1,6 @@
 # Frontend conventions
 
-How `packages/web` is built, and the rules that keep it that way. Most of the rules are tests, so they cannot
+How `packages/web` is built, and the rules that keep it that way. How it looks is in [DESIGN.md](DESIGN.md). Most of the rules are tests, so they cannot
 quietly stop being true. Where they came from: a study of `kam-frontend` (what to keep, what not to), and the NatSpec
 the `kam` contracts are documented with.
 
@@ -20,6 +20,7 @@ app/          routes. Server components by default; the root layout and the prov
 components/   presentation. No data fetching: they take what was already read.
 config/       the one place settings are read (env.ts), and the wagmi configuration.
 chain/        server-only reads of the chain. Every file here says `import "server-only"`.
+model/        the shapes the pages share (JSON-safe `type`s) and pure wording, kept out of `chain/` so a component can use them without reaching a server-only module.
 ```
 
 Added when first needed, not before: `features/<name>/` (hooks, pure resolvers and components of one flow),
@@ -45,7 +46,7 @@ Enforced by `test/architecture.test.ts`, over the real `src/`:
 
 `env.test.ts` checks the list of public variables against `.env.example`, so neither can drift.
 
-Two more rules, each pinned by its own unit tests:
+More rules, each pinned by its own tests:
 
 - **The wagmi configuration is built per request on the server** (`getWagmiConfig`), and once in the browser. A
   server never counts as hydrated, so each request's cookie overwrites the connection state of a configuration shared
@@ -53,6 +54,16 @@ Two more rules, each pinned by its own unit tests:
 - **A failed read is a value, and its cause goes to the server log** (`chain/collection.ts`). The log carries viem's
   `shortMessage` and `details`, never its `message`: that repeats the request's URL, which is `RPC_URL` and may hold a
   provider key. The page says which chain it could not reach and nothing about how.
+- **Reads of the chain go through `cachedRead`** (a minute, keyed by what was asked, the chain and the collection) and
+  return JSON: the types refuse a `bigint`, so the price travels as a string of wei. Reads made at the same moment are
+  one JSON-RPC batch. Pages build every list from the `Solved` events and never render a token to draw a list; the art is
+  its own address (`/token/[id]/art`), loaded as the plates scroll into view.
+- **A token that does not exist is a 404, not a 200.** No route that can say "not found" has a `loading` file above it:
+  it would make Next.js send the shell before the page has read anything, and `notFound()` would then be a 200 with
+  `noindex`. `test/status.test.ts` holds it.
+- **What a page serves from the contract is checked first.** The art route serves the SVG from the site's own address
+  only if it is one whole document with nothing that runs, embeds, links or loads from elsewhere, with a policy that
+  stops anything running if the address is opened directly.
 
 ## Documentation: NatSpec, as TSDoc
 

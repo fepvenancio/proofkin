@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeTrial, formatDuration, formatEth, labelledInputs, shortAddress, slotsLeft } from "../src/format.ts";
+import { describeTrial, formatDuration, formatEth, labelledInputs, ordinal, shortAddress, slotsLeft } from "../src/format.ts";
 
 describe("shortAddress", () => {
   it("keeps the start and end, which is how people recognise an address", () => {
@@ -76,5 +76,17 @@ describe("describeTrial", () => {
     expect(describeTrial(3, 9)).toBe("random case 8");
     expect(describeTrial(3, 16)).toBe("random case 9"); // GRID_PATH's trials 10..15 are fixed
     expect(describeTrial(3, 107)).toBe("random case 100");
+  });
+});
+
+describe("ordinal", () => {
+  it("counts 1st, 2nd, 3rd and then th", () => {
+    expect([1, 2, 3, 4, 5, 10].map(ordinal)).toEqual(["1st", "2nd", "3rd", "4th", "5th", "10th"]);
+  });
+  it("says th for the teens, which break the pattern", () => {
+    expect([11, 12, 13, 111, 112, 113].map(ordinal)).toEqual(["11th", "12th", "13th", "111th", "112th", "113th"]);
+  });
+  it("goes back to st, nd and rd after the teens", () => {
+    expect([21, 22, 23, 24, 50, 101, 102].map(ordinal)).toEqual(["21st", "22nd", "23rd", "24th", "50th", "101st", "102nd"]);
   });
 });

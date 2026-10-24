@@ -16,6 +16,13 @@ export function formatEth(wei: bigint): string {
   return `${formatEther(wei)} ETH`;
 }
 
+/** 1st, 2nd, 3rd, 4th ... 11th, 12th, 13th, 21st. */
+export function ordinal(n: number): string {
+  const rest = n % 100;
+  if (rest >= 11 && rest <= 13) return `${n}th`;
+  return `${n}${({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[n % 10] ?? "th"}`;
+}
+
 export const slotsLeft = (solved: number): number => Math.max(0, SLOTS_PER_PUZZLE - solved);
 
 export function labelledInputs(puzzleId: number, inputs: number[]): { label: string; value: number }[] {
