@@ -39,6 +39,16 @@ describe("PuzzleStatement", () => {
     expect(screen.queryByRole("list", { name: "Answers" })).not.toBeInTheDocument();
   });
 
+  it("heads the outputs 'Answers' when there are several, and 'Answer' when there is one", () => {
+    const { unmount } = render(<PuzzleStatement puzzleId={2} />);
+    expect(screen.getByText("Answers")).toBeInTheDocument();
+    expect(screen.queryByText("Answer")).not.toBeInTheDocument();
+    unmount();
+    render(<PuzzleStatement puzzleId={1} />);
+    expect(screen.getByText("Answer")).toBeInTheDocument();
+    expect(screen.queryByText("Answers")).not.toBeInTheDocument();
+  });
+
   it("numbers the output slots, for a puzzle with several", () => {
     render(<PuzzleStatement puzzleId={2} />);
     const answers = screen.getByRole("list", { name: "Answers" });

@@ -82,6 +82,30 @@ describe("testView", () => {
     expect(view.rows.map((row) => row.label)).toEqual(["Inputs", "Expected", "Got"]);
     expect(view.rows[0]!.value).toMatch(/^x0=\d+/); // SORT8 names its inputs x0 to x7
   });
+
+  it("shows the answer wanted and the answer given as themselves, so the two can be compared", () => {
+    const analysis = analyze(skeletonFor(2));
+    if (!analysis.ok) throw new Error("starting point does not assemble");
+    const report = runLocalTest(analysis.program);
+    if (report.status !== "fail" || !report.failure.got)
+      throw new Error("the starting point should fail with an answer");
+    const view = testView({ valid: true, report }, 2);
+    if (view.kind !== "fail") throw new Error("expected a failure");
+    expect(view.rows[1]).toEqual({ label: "Expected", value: report.failure.expected.join(", ") });
+    expect(view.rows[2]).toEqual({ label: "Got", value: report.failure.got.join(", ") });
+    expect(view.rows[2]!.value).not.toBe(view.rows[1]!.value);
+  });
+
+  it("says an arithmetic failure is one, where the program gave no answer at all", () => {
+    // divides by zero on the first case it is given
+    const analysis = analyze("puzzle SORT8\na = IN 0\nz = CONST 0\nd = DIV a z\nout d d d d d d d d\n");
+    if (!analysis.ok) throw new Error("program does not assemble");
+    const report = runLocalTest(analysis.program);
+    const view = testView({ valid: true, report }, 2);
+    expect(view.kind).toBe("fail");
+    if (view.kind !== "fail") return;
+    expect(view.rows[2]!.value).toMatch(/^an arithmetic failure/);
+  });
 });
 
 /* //////////////////////////////////////////////////////////////

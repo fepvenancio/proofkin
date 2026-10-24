@@ -49,6 +49,15 @@ describe("groupInputs", () => {
     expect(groupInputs(two)).toHaveLength(2);
   });
 
+  it("does not join names that differ, even when their numbers count on", () => {
+    const groups = groupInputs([
+      { label: "a0", lo: 0, hi: 9 },
+      { label: "b1", lo: 0, hi: 9 },
+      { label: "c2", lo: 0, hi: 9 },
+    ]);
+    expect(groups.map((g) => g.firstLabel)).toEqual(["a0", "b1", "c2"]);
+  });
+
   it("does not join names that skip a number, or ranges that differ", () => {
     expect(
       groupInputs([

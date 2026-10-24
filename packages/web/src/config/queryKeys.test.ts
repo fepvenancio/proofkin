@@ -34,6 +34,7 @@ describe("queryKeys", () => {
   it("name the chain and the collection, so an answer from one deployment is never shown for another", () => {
     expect(queryKeys.preview(app, PROGRAM, SEED)).not.toEqual(queryKeys.preview(otherChain, PROGRAM, SEED));
     expect(queryKeys.preview(app, PROGRAM, SEED)).not.toEqual(queryKeys.preview(otherCollection, PROGRAM, SEED));
+    expect(queryKeys.programStatus(app, PROGRAM)).not.toEqual(queryKeys.programStatus(otherChain, PROGRAM));
     expect(queryKeys.programStatus(app, PROGRAM)).not.toEqual(queryKeys.programStatus(otherCollection, PROGRAM));
   });
 
