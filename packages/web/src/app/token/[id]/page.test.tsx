@@ -112,16 +112,23 @@ describe("a token's page", () => {
     );
   });
 
-  it("is not found for an id that is not a token number, without reading anything", async () => {
-    for (const bad of ["0", "03", "abc", "-1"]) {
+  it("is not found for an id that is not a token number, or above the 300 the collection can hold, without reading", async () => {
+    for (const bad of ["0", "03", "abc", "-1", "301"]) {
       await expect(Page({ params: Promise.resolve({ id: bad }) })).rejects.toThrow("NEXT_NOT_FOUND");
     }
     expect(vi.mocked(getTokenDetail)).not.toHaveBeenCalled();
+    expect(vi.mocked(getCollection)).not.toHaveBeenCalled();
   });
 
-  it("is not found for a token that has not been minted yet", async () => {
-    await expect(open("4")).rejects.toThrow("NEXT_NOT_FOUND");
-    expect(vi.mocked(getTokenDetail)).not.toHaveBeenCalled();
+  it("asks the contract about a token beyond the cached supply, so one minted a moment ago is not a 404", async () => {
+    // the cache says 3 tokens exist; the contract says token 4 does, because someone minted it since
+    render(await open("4"));
+    expect(screen.getByRole("heading", { level: 1, name: "Proofkin #4" })).toBeInTheDocument();
+    expect(vi.mocked(getTokenDetail)).toHaveBeenCalledWith(expect.anything(), 4);
+  });
+
+  it("is not found for a token the contract has not minted, even one within 300", async () => {
+    await expect(open("4", { kind: "missing" })).rejects.toThrow("NEXT_NOT_FOUND");
   });
 
   it("is not found when the contract says the token does not exist", async () => {

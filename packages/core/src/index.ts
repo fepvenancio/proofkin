@@ -10,6 +10,7 @@ export * from "./gallery.ts";
 export * from "./localTest.ts";
 export * from "./mint.ts";
 export * from "./mintGate.ts";
+export * from "./mintStep.ts";
 export * from "./phase.ts";
 export * from "./puzzleInfo.ts";
 export * from "./storage.ts";

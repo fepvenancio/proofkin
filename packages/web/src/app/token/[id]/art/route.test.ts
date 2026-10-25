@@ -19,13 +19,11 @@ vi.mock("@/chain/collection", () => ({ getCollection: vi.fn() }));
 vi.mock("@/chain/art", () => ({ getTokenArt: vi.fn() }));
 
 const SVG = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
-const collection = (totalSupply: number) => ({ mintPrice: "0", totalSupply, solvedCount: [], bestNodes: [] });
 const get = (id: string) =>
   GET(new Request(`https://proofkin.test/token/${id}/art`), { params: Promise.resolve({ id }) });
 
 describe("GET /token/[id]/art", () => {
   it("serves the SVG as an image", async () => {
-    vi.mocked(getCollection).mockResolvedValueOnce(collection(5));
     vi.mocked(getTokenArt).mockResolvedValueOnce({ kind: "found", value: SVG });
 
     const response = await get("3");
@@ -37,7 +35,6 @@ describe("GET /token/[id]/art", () => {
   });
 
   it("stops anything in it from running if someone opens the address directly", async () => {
-    vi.mocked(getCollection).mockResolvedValueOnce(collection(5));
     vi.mocked(getTokenArt).mockResolvedValueOnce({ kind: "found", value: SVG });
     const policy = (await get("3")).headers.get("content-security-policy")!;
     expect(policy).toContain("default-src 'none'");
@@ -45,7 +42,6 @@ describe("GET /token/[id]/art", () => {
   });
 
   it("lets a browser keep it for minutes and a CDN for an hour, since a token's art rarely changes", async () => {
-    vi.mocked(getCollection).mockResolvedValueOnce(collection(5));
     vi.mocked(getTokenArt).mockResolvedValueOnce({ kind: "found", value: SVG });
     const cache = (await get("3")).headers.get("cache-control")!;
     expect(cache).toContain("public");
@@ -54,43 +50,45 @@ describe("GET /token/[id]/art", () => {
   });
 
   it("asks for the token the address names", async () => {
-    vi.mocked(getCollection).mockResolvedValueOnce(collection(5));
     vi.mocked(getTokenArt).mockResolvedValueOnce({ kind: "found", value: SVG });
     await get("4");
     expect(vi.mocked(getTokenArt)).toHaveBeenCalledWith(expect.anything(), 4);
   });
 
-  it("is not found for anything that is not a plain token number, without asking the node", async () => {
-    for (const bad of ["0", "03", "abc", "-1", "1.5"]) {
+  it("is not found for anything that is not a plain token number, or above the 300 the collection can hold, without asking the node", async () => {
+    for (const bad of ["0", "03", "abc", "-1", "1.5", "301"]) {
       expect((await get(bad)).status).toBe(404);
     }
     expect(vi.mocked(getCollection)).not.toHaveBeenCalled();
     expect(vi.mocked(getTokenArt)).not.toHaveBeenCalled();
   });
 
-  it("is not found for a token beyond the supply, without rendering anything: a stranger can ask for any number", async () => {
-    vi.mocked(getCollection).mockResolvedValueOnce(collection(5));
+  it("asks the contract about a token the cache has not seen yet, because one minted a moment ago is not a 404", async () => {
+    vi.mocked(getTokenArt).mockResolvedValueOnce({ kind: "found", value: SVG });
     const response = await get("6");
-    expect(response.status).toBe(404);
-    expect(vi.mocked(getTokenArt)).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(vi.mocked(getTokenArt)).toHaveBeenCalledWith(expect.anything(), 6);
   });
 
-  it("is not found when the contract says the token does not exist", async () => {
-    vi.mocked(getCollection).mockResolvedValueOnce(collection(5));
+  it("does not read the collection at all: its cached supply is what made new tokens 404", async () => {
+    vi.mocked(getTokenArt).mockResolvedValueOnce({ kind: "found", value: SVG });
+    await get("3");
+    expect(vi.mocked(getCollection)).not.toHaveBeenCalled();
+  });
+
+  it("is not found when the contract says the token does not exist, and keeps that answer only seconds", async () => {
     vi.mocked(getTokenArt).mockResolvedValueOnce({ kind: "missing" });
-    expect((await get("3")).status).toBe(404);
+    const response = await get("250");
+    expect(response.status).toBe(404);
+    // a repeated probe of an unminted id should be answered by a CDN, not by the node, but a token minted a moment
+    // later must not stay "missing" for long
+    expect(response.headers.get("cache-control")).toBe("public, max-age=5, s-maxage=5");
   });
 
   it("is a bad gateway, and is never kept, when the chain cannot be read", async () => {
-    vi.mocked(getCollection).mockResolvedValueOnce(undefined);
-    const noSupply = await get("3");
-    expect(noSupply.status).toBe(502);
-    expect(noSupply.headers.get("cache-control")).toBe("no-store");
-
-    vi.mocked(getCollection).mockResolvedValueOnce(collection(5));
     vi.mocked(getTokenArt).mockResolvedValueOnce({ kind: "unavailable" });
-    const noArt = await get("3");
-    expect(noArt.status).toBe(502);
-    expect(noArt.headers.get("cache-control")).toBe("no-store");
+    const response = await get("3");
+    expect(response.status).toBe(502);
+    expect(response.headers.get("cache-control")).toBe("no-store");
   });
 });

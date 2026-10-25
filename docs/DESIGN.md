@@ -78,6 +78,33 @@ is a solution, and its position is the order it was solved in. The ring goes on 
 record. It is one picture with one description ("2 of 50 solved, smallest 17 nodes"); the sentence under it says the
 same in words.
 
+## The workbench
+
+The solve page keeps the album's look and puts the plate to work. On a wide screen the statement, the editor, the test
+and the operations reference run down the left, and the plate sits on the right and stays in view as the page scrolls, so
+the picture the contract draws is always beside the program that makes it. The plate is the one moving part: it redraws
+as you write, and while the next picture is drawn the last one stays, at half strength, so it does not blink out.
+
+- **The statement** reads as a list of terms: inputs, answer, rule, edge cases. An input is shown as the line that reads
+  it (`IN 0 to 7`), because that is what the player types, and a run of alike inputs is one line, so a phone reaches the
+  editor without two screens of repetition.
+- **The editor** is an ordinary text field in the monospaced setting of the one font, on the paper with a rule round it:
+  no dark code theme, since the plates are the only dark things on the site. The line under it says in words how big the
+  program is or what is wrong, and the line number in an error is a link that selects that line.
+- **The test** is a heading, a button and a sentence. A failure shows the case as three terms (inputs, expected, got).
+- **Buttons**: the primary action is ink on paper, like the wallet button; everything else is an underlined link.
+- **On a phone** the plate follows the editor, since it is what editing is for but should not push the editor down.
+
+### The mint panel
+
+The mint sits under the test and is the one place the page asks for money, so it is plain. Before a mint it is a button,
+the reason it is closed when it is (a sentence beside it, not a tooltip), and one sentence saying a mint is two
+transactions and how long the wait is. Once a commit exists it is a numbered list, because a mint is a sequence: each step
+has a dot in the puzzle's hue, filled when it is done, ringed when it is the one the mint is at, and hollow when it is still
+to come. The salt is shown in the monospaced setting with what losing it means, and the countdown says blocks and time
+("2 more blocks to go (4 s)"). The only button that moves money is ink on paper, like the wallet's; "Forget" is the one
+destructive link, and asks first. The finished panel ends on the token with a link to it.
+
 ## Motion
 
 The art animates itself and nothing else does. A hover brightens a plate's edge in its puzzle's hue, which answers a

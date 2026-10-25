@@ -37,6 +37,33 @@ describe("the checker catches what it is for", () => {
     );
   });
 
+  it("lets a client component call a server action, whose own imports stay on the server", () => {
+    const files = {
+      "src/chain/server.ts": serverModule,
+      "src/features/refresh.ts": `"use server";\nimport { secret } from "@/chain/server";\nexport async function refresh() {}\n`,
+      "src/components/Wallet.tsx": `"use client";\nimport { refresh } from "@/features/refresh";\n`,
+    };
+    expect(rules(files)).toEqual([]);
+  });
+
+  it("does not let a module that merely sits beside a server action off: only the directive makes the boundary", () => {
+    const files = {
+      "src/chain/server.ts": serverModule,
+      "src/features/refresh.ts": `import { secret } from "@/chain/server";\nexport async function refresh() {}\n`,
+      "src/components/Wallet.tsx": `"use client";\nimport { refresh } from "@/features/refresh";\n`,
+    };
+    expect(rules(files)).toEqual(["client-reaches-server-only"]);
+  });
+
+  it("reads the directive only at the top, not in a comment", () => {
+    const files = {
+      "src/chain/server.ts": serverModule,
+      "src/features/refresh.ts": `// "use server"\nimport { secret } from "@/chain/server";\n`,
+      "src/components/Wallet.tsx": `"use client";\nimport "@/features/refresh";\n`,
+    };
+    expect(rules(files)).toEqual(["client-reaches-server-only"]);
+  });
+
   it("lets a server component use a server-only module", () => {
     const files = {
       "src/chain/server.ts": serverModule,

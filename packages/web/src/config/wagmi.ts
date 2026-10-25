@@ -25,7 +25,8 @@ export interface WagmiSettings {
  * @dev (1) The connected wallet is kept in a cookie, so the server can render the page already knowing it, with no
  * flash of "connect". (2) On the server there are no connectors: WalletConnect reaches for browser storage as it
  * starts, and the server only needs the chain and the cookie to read the initial state. (3) Wallets that go through
- * WalletConnect are offered only when a project id exists.
+ * WalletConnect are offered only when a project id exists. (4) Reads made at the same moment travel as one JSON-RPC
+ * batch: the solve page asks three things about a program, and a public node rate-limits by request.
  * @param settings - The deployment, where this runs, and the optional WalletConnect project id.
  * @returns The configuration. `getWagmiConfig` decides how often to build one: each server request gets its own, the
  * browser keeps one.
@@ -45,7 +46,7 @@ export function createWagmiConfig({ app, server, walletConnectProjectId: project
         }),
     ssr: true,
     storage: createStorage({ storage: cookieStorage }),
-    transports: { [app.chain.id]: http(app.rpcUrl) },
+    transports: { [app.chain.id]: http(app.rpcUrl, { batch: true }) },
   });
 }
 
