@@ -1,13 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import Page from "@/app/token/[id]/page";
+import Page from "@/app/(site)/token/[id]/page";
 import { getCollection } from "@/chain/collection";
 import { getSolvedEntries } from "@/chain/solved";
 import { getTokenDetail } from "@/chain/token";
 import { type ReadResult, type TokenDetail } from "@/model/data";
 
-import { collection, entries, owners } from "../../../../test/data";
+import { collection, entries, owners } from "../../../../../test/data";
 
 vi.hoisted(() => {
   const settings = {

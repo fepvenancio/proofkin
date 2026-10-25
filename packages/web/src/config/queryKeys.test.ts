@@ -52,6 +52,13 @@ describe("queryKeys", () => {
     expect(queryKeys.programStatus(otherCollection, PROGRAM).slice(0, all.length)).not.toEqual(all);
   });
 
+  it("name the chain and the collection for the console's view of it, so one deployment's state is never shown for another", () => {
+    expect(queryKeys.collectionStatus(app)).toEqual(queryKeys.collectionStatus(app));
+    expect(queryKeys.collectionStatus(app)).not.toEqual(queryKeys.collectionStatus(otherChain));
+    expect(queryKeys.collectionStatus(app)).not.toEqual(queryKeys.collectionStatus(otherCollection));
+    expect(queryKeys.collectionStatus(app)[0]).not.toBe(queryKeys.latestBlock(app)[0]);
+  });
+
   it("keep the two questions apart, even for the same program", () => {
     expect(queryKeys.preview(app, PROGRAM, SEED)[0]).not.toBe(queryKeys.programStatus(app, PROGRAM)[0]);
   });

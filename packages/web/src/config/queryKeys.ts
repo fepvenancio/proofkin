@@ -1,5 +1,5 @@
 import { type AppConfig } from "@proofkin/core";
-import { type Hex } from "viem";
+import { type Address, type Hex } from "viem";
 
 /**
  * @notice Every TanStack Query key the app uses, in one place.
@@ -12,6 +12,9 @@ export const queryKeys = {
   preview: (app: AppConfig, program: Hex, seed: Hex) => ["preview", app.chain.id, app.proofkin, program, seed] as const,
   /** The chain's newest block, which tells a saved commit whether its reveal window is still open. */
   latestBlock: (app: AppConfig) => ["latestBlock", app.chain.id, app.proofkin] as const,
+  /** What the console shows about a collection: its owner, renderer, price, supply and the fees it holds. */
+  collectionStatus: (collection: { chain: { id: number }; proofkin: Address }) =>
+    ["collectionStatus", collection.chain.id, collection.proofkin] as const,
   /** The beginning every `programStatus` key shares: what a mint ends, since it changes the answer for its program. */
   programStatuses: (app: AppConfig) => ["programStatus", app.chain.id, app.proofkin] as const,
   /** What the contract says about an exact program: free, already minted, or its puzzle full. */

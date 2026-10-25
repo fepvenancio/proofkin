@@ -1,4 +1,11 @@
-import { type AppConfig, type ConfigResult, parseConfig } from "@proofkin/core";
+import {
+  type AppConfig,
+  type ChainConfig,
+  type ChainConfigResult,
+  type ConfigResult,
+  parseChainConfig,
+  parseConfig,
+} from "@proofkin/core";
 
 /* //////////////////////////////////////////////////////////////
                            PUBLIC SETTINGS
@@ -42,6 +49,51 @@ export function readAppConfig(env: Env = publicEnv): ConfigResult {
  */
 export function requireAppConfig(env: Env = publicEnv): AppConfig {
   const result = readAppConfig(env);
+  if (!result.ok) {
+    throw new Error(`Proofkin is not configured:\n${result.problems.map((problem) => `  ${problem}`).join("\n")}`);
+  }
+  return result.config;
+}
+
+/** Which collection the settings name: one, none yet, or an attempt that does not add up. */
+export type CollectionSource =
+  { kind: "configured"; app: AppConfig } | { kind: "none" } | { kind: "broken"; problems: string[] };
+
+/**
+ * @notice The collection the settings name, if they name one.
+ * @dev None is not a problem: before the first deployment there is nothing to name, and the admin console is there to
+ * make one. But a collection named in part, or with a typo, is a mistake and is reported as one. The chain is not
+ * judged here: the root layout has already refused a page without one.
+ * @param env - The settings to read; the app's own unless a test supplies others.
+ * @returns The collection, nothing, or the problems with what was named.
+ */
+export function collectionFromEnv(env: Env = publicEnv): CollectionSource {
+  const result = readAppConfig(env);
+  if (result.ok) return { kind: "configured", app: result.config };
+  const named = Boolean(env.NEXT_PUBLIC_PROOFKIN?.trim() || env.NEXT_PUBLIC_RENDERER?.trim());
+  return named ? { kind: "broken", problems: result.problems } : { kind: "none" };
+}
+
+/**
+ * @notice Reads and checks the chain the app is pointed at, and nothing about contracts.
+ * @dev For what runs before a collection exists: the wallet providers every page sits in, and the admin console that
+ * deploys one. Never throws, like `readAppConfig`.
+ * @param env - The settings to read; the app's own unless a test supplies others.
+ * @returns The checked chain, or every problem found.
+ */
+export function readChainConfig(env: Env = publicEnv): ChainConfigResult {
+  return parseChainConfig(env, "NEXT_PUBLIC_");
+}
+
+/**
+ * @notice The chain configuration, or an error that lists everything wrong with it.
+ * @dev For code that cannot run without a chain, such as the wallet configuration. The root layout checks first and
+ * shows the problems instead, so a visitor never sees this error on a misconfigured deploy.
+ * @param env - The settings to read; the app's own unless a test supplies others.
+ * @returns The checked chain.
+ */
+export function requireChainConfig(env: Env = publicEnv): ChainConfig {
+  const result = readChainConfig(env);
   if (!result.ok) {
     throw new Error(`Proofkin is not configured:\n${result.problems.map((problem) => `  ${problem}`).join("\n")}`);
   }

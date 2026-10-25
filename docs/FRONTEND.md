@@ -9,23 +9,25 @@ the `kam` contracts are documented with.
 | Package | What | Runs in |
 |---|---|---|
 | `@proofkin/vm` | The reference VM, assembler and puzzles | anywhere |
-| `@proofkin/core` | What the apps share: config, chain reads, the mint flow, phases, the mint gate, storage, puzzle texts, the generated ABI. `@proofkin/core/testing` adds the Anvil harness | browser and server (`/testing`: Node only) |
+| `@proofkin/core` | What the apps share: config, chain reads, the mint flow, phases, the mint gate, storage, puzzle texts, the generated ABI. `@proofkin/core/testing` adds the Anvil harness. `@proofkin/core/launch` is the deployer's: the contracts' creation code (generated, about 64 KB of hex), the deploy flow and the facts about a launch | browser and server (`/testing`: Node only; `/launch`: the admin route only) |
 | `@proofkin/web` | The Next.js app | server components, and client islands |
 | `@proofkin/playground` | The first, framework-free page. Retired once `web` reaches parity | browser |
 
 ## Layout of `packages/web/src`
 
 ```
-app/          routes. Server components by default; the root layout and the providers are the only wiring.
+app/          routes. Server components by default; the root layout and the providers are the only wiring. The root layout
+              checks the chain and nothing more. `(site)/` holds the pages that read the collection, and its layout checks that
+              the contracts are configured. `admin/` is outside it, because it works before there is a collection.
 components/   presentation. No data fetching: they take what was already read.
 config/       the one place settings are read (env.ts), and the wagmi configuration.
 chain/        server-only reads of the chain. Every file here says `import "server-only"`.
-features/     one folder per flow (`features/solve/`): its hooks, pure view functions and components, and the one island that
-              joins them. A page imports the island and the statement, nothing deeper.
+features/     one folder per flow (`features/solve/`, `features/admin/`): its hooks, pure view functions and components, and
+              the one island that joins them. A page imports the island and the statement, nothing deeper.
 model/        the shapes the pages share (JSON-safe `type`s) and pure wording, kept out of `chain/` so a component can use them without reaching a server-only module.
 ```
 
-Added when first needed, not before: `contracts/`. (`features/solve/` and `config/queryKeys.ts` came with F3a.)
+Added when first needed, not before: `contracts/`. (`features/solve/` and `config/queryKeys.ts` came with F3a; `features/admin/` and `app/admin/` with F4a.)
 
 ## The server/client rule
 
@@ -44,6 +46,10 @@ Enforced by `test/architecture.test.ts`, over the real `src/`:
 2. Every module in `src/chain/` imports `server-only`, so rule 1 has something to catch.
 3. The environment is read in `src/config/env.ts` and nowhere else, and there only as `process.env.NAME`: Next.js
    replaces exactly those expressions, and in the browser `process.env` itself is empty.
+
+4. Only `src/app/admin` and `src/features/admin` import `@proofkin/core/launch`, and no module outside them imports
+   `@/features/admin/…`. The bytecode of both contracts is about 64 KB of hex: it belongs to the admin route's bundle and to
+   no visitor's page.
 
 `env.test.ts` checks the list of public variables against `.env.example`, so neither can drift.
 
@@ -74,6 +80,24 @@ More rules, each pinned by its own tests:
   holds the commit in flight and places the words. What a button may do is a pure function (`mintGate`, `stepGate`), and
   what step a mint is at is another (`resolveMintStep`), so the panel decides nothing. Tests drive the real flow through
   `test/fakeChain.ts`, a chain in memory that answers exactly the calls the flow makes.
+- **The admin console needs the chain and nothing else.** The root layout refuses a page without a chain
+  (`readChainConfig`); the contracts are checked by `(site)/layout.tsx`, so `/admin` can draw before the first deployment.
+  Which collection the console works on is, in order: the one the site's settings name; the launch the connected account
+  has on record; a finished launch this browser made. A collection named in part, or with a typo, is an error and is
+  shown as one, not as an absence (`collectionFromEnv`).
+- **The console's reads are never cached.** It is where a change is made and has to show the change the moment it lands;
+  it reads in the browser, with no `cachedRead`, and a write ends the queries it makes untrue (the same rule as a mint
+  ending `programStatus`).
+- **A launch is written down before it is sent.** The record (`DeployStore`) is saved when the owner is named and after
+  each transaction is sent, before it is waited for, so a closed tab continues the launch from the chain and never sends
+  a second renderer. Only one record is kept for each chain and account, so a second launch cannot lose where the first is.
+- **What the chain holds is checked against the build.** After the deploy the collection's code must equal the compiled
+  code with the launch price written into the two places the compiler left for it, byte for byte with nothing masked, and
+  the renderer's must equal the compiled renderer. `pnpm gen:abi` generates the creation codes from `out/`, and fails
+  when a contract gains a library to link, a second immutable, or a renderer immutable, so the check cannot silently
+  stop meaning what it says.
+- **Confirmation is typed, and about the address.** A deployment to Base mainnet asks for the last six characters of the
+  owner's address, so that the address has to be read before the money is spent.
 - **A token that does not exist is a 404, not a 200.** No route that can say "not found" has a `loading` file above it:
   it would make Next.js send the shell before the page has read anything, and `notFound()` would then be a 200 with
   `noindex`. `test/status.test.ts` holds it.

@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from "vitest";
 
-import { GET } from "@/app/token/[id]/art/route";
+import { GET } from "@/app/(site)/token/[id]/art/route";
 import { getTokenArt } from "@/chain/art";
 import { getCollection } from "@/chain/collection";
 

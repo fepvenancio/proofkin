@@ -1,11 +1,11 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import Page from "@/app/page";
+import Page from "@/app/(site)/page";
 import { getCollection } from "@/chain/collection";
 import { getSolvedEntries } from "@/chain/solved";
 
-import { collection, entries } from "../../test/data";
+import { collection, entries } from "../../../test/data";
 
 // `publicEnv` is read once, when `@/config/env` is first imported, so the variables must exist before the imports run.
 vi.hoisted(() => {

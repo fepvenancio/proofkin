@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseConfig } from "../src/config.ts";
+import { parseChainConfig, parseConfig } from "../src/config.ts";
 
 const PROOFKIN = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 const RENDERER = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
@@ -98,5 +98,68 @@ describe("parseConfig under another prefix", () => {
   it("still reads VITE_ when no prefix is given", () => {
     expect(parseConfig(base).ok).toBe(true);
     expect(parseConfig(next).ok).toBe(false);
+  });
+});
+
+describe("parseChainConfig", () => {
+  // The admin console runs before any contract exists, so it needs the chain and a way to reach it and nothing more.
+  const chainOnly = { NEXT_PUBLIC_CHAIN: "baseSepolia" };
+
+  it("reads the chain without any contract address, with the same defaults as parseConfig", () => {
+    const r = parseChainConfig({ VITE_CHAIN: "anvil" });
+    if (!r.ok) throw new Error(r.problems.join("; "));
+    expect(r.config).toMatchObject({ name: "anvil", rpcUrl: "http://127.0.0.1:8545", blockTimeSeconds: 1, pollingIntervalMs: 500 });
+    expect(r.config.chain.id).toBe(31337);
+    expect("proofkin" in r.config).toBe(false);
+    expect("renderer" in r.config).toBe(false);
+  });
+
+  it("takes an RPC URL and block time from the environment, under the prefix it is given", () => {
+    const r = parseChainConfig({ ...chainOnly, NEXT_PUBLIC_RPC_URL: "https://rpc.example/k", NEXT_PUBLIC_BLOCK_TIME: "4" }, "NEXT_PUBLIC_");
+    if (!r.ok) throw new Error(r.problems.join("; "));
+    expect(r.config).toMatchObject({ name: "baseSepolia", rpcUrl: "https://rpc.example/k", blockTimeSeconds: 4, pollingIntervalMs: 2000 });
+  });
+
+  it("is the chain part of parseConfig, for every chain it knows", () => {
+    for (const name of ["anvil", "baseSepolia", "base"]) {
+      const env = { ...base, VITE_CHAIN: name, VITE_RPC_URL: "https://rpc.example/k", VITE_BLOCK_TIME: "3" };
+      const whole = parseConfig(env);
+      const part = parseChainConfig(env);
+      if (!whole.ok || !part.ok) throw new Error(name);
+      expect(part.config).toEqual({
+        name: whole.config.name,
+        chain: whole.config.chain,
+        rpcUrl: whole.config.rpcUrl,
+        blockTimeSeconds: whole.config.blockTimeSeconds,
+        pollingIntervalMs: whole.config.pollingIntervalMs,
+      });
+    }
+  });
+
+  it("asks for nothing but the chain and the block time, and names them with the prefix", () => {
+    const r = parseChainConfig({ NEXT_PUBLIC_CHAIN: "mainnet", NEXT_PUBLIC_BLOCK_TIME: "0" }, "NEXT_PUBLIC_");
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    const text = r.problems.join("\n");
+    expect(text).toMatch(/NEXT_PUBLIC_CHAIN/);
+    expect(text).toMatch(/NEXT_PUBLIC_BLOCK_TIME/);
+    expect(text).not.toMatch(/PROOFKIN|RENDERER|DEPLOY_BLOCK/);
+  });
+
+  it("is not ok for a chain that is right and a block time that is not, whatever else is", () => {
+    const r = parseChainConfig({ VITE_CHAIN: "base", VITE_BLOCK_TIME: "0" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.problems).toEqual(['VITE_BLOCK_TIME must be a positive number of seconds (it is "0").']);
+    expect(parseChainConfig({ VITE_CHAIN: "base", VITE_BLOCK_TIME: "soon" }).ok).toBe(false);
+  });
+
+  it("does not need the contract settings to be right, or even to exist", () => {
+    expect(parseChainConfig({ VITE_CHAIN: "base", VITE_PROOFKIN: "nope", VITE_DEPLOY_BLOCK: "-3" }).ok).toBe(true);
+  });
+
+  it("asks for the chain when it is missing", () => {
+    const r = parseChainConfig({});
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.problems[0]).toMatch(/VITE_CHAIN.*anvil.*baseSepolia.*base/);
   });
 });

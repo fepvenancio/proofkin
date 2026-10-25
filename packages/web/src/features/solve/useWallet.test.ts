@@ -1,3 +1,4 @@
+import { parseChainConfig } from "@proofkin/core";
 import { renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -26,6 +27,17 @@ const CLIENT = { account: { address: ALICE } };
 const wallet = () => renderHook(() => useWallet(app)).result.current;
 
 describe("useWallet", () => {
+  it("needs only the chain, so the admin console can use it before a contract exists", () => {
+    const chain = parseChainConfig({ NEXT_PUBLIC_CHAIN: "baseSepolia" }, "NEXT_PUBLIC_");
+    if (!chain.ok) throw new Error(chain.problems.join("; "));
+    wagmi.account = { status: "connected", address: ALICE, chainId: 84532 };
+    wagmi.walletClient = CLIENT;
+    expect(renderHook(() => useWallet(chain.config)).result.current).toMatchObject({
+      status: "connected",
+      network: "right",
+    });
+  });
+
   beforeEach(() => {
     wagmi.account = { status: "disconnected" };
     wagmi.walletClient = undefined;

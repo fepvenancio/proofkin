@@ -101,6 +101,44 @@ describe("the checker catches what it is for", () => {
     expect(rules(files)).toEqual(["client-reaches-server-only"]);
   });
 
+  describe("the deployer's code stays on the admin route", () => {
+    const ADMIN_PAGE = `import { AdminConsole } from "@/features/admin/AdminConsole";\n`;
+    const BYTECODE = `import { proofkinCreationCode } from "@proofkin/core/launch";\n`;
+
+    it("lets the console and its page use the deployer's entry of core, which carries the contracts' bytecode", () => {
+      const files = { "src/app/admin/page.tsx": ADMIN_PAGE, "src/features/admin/AdminConsole.tsx": BYTECODE };
+      expect(rules(files)).toEqual([]);
+    });
+
+    it("flags any other module that imports it, since the bytecode would ship in a visitor's page", () => {
+      expect(findViolations({ "src/components/Plate.tsx": BYTECODE })).toEqual([
+        {
+          file: "src/components/Plate.tsx",
+          rule: "launch-outside-admin",
+          detail: 'only src/app/admin and src/features/admin import "@proofkin/core/launch"',
+        },
+      ]);
+      expect(rules({ "src/features/solve/Island.tsx": `import "@proofkin/core/launch";\n` })).toEqual([
+        "launch-outside-admin",
+      ]);
+    });
+
+    it("flags a module outside the admin route that imports the console, which brings the bytecode along", () => {
+      expect(rules({ "src/app/page.tsx": ADMIN_PAGE })).toEqual(["admin-reached-from-outside"]);
+      expect(rules({ "src/components/SiteHeader.tsx": `import "@/features/admin/CollectionStatus";\n` })).toEqual([
+        "admin-reached-from-outside",
+      ]);
+    });
+
+    it("does not take a comment about the entry for importing it", () => {
+      expect(
+        rules({
+          "src/lib/x.ts": `// @proofkin/core/launch holds the bytecode\n/* import "@proofkin/core/launch" */\n`,
+        }),
+      ).toEqual([]);
+    });
+  });
+
   it("flags a computed or whole-object read in config/env.ts, which Next.js would not replace", () => {
     for (const bad of ["process.env[name]", "const all = process.env;", "{ ...process.env }"]) {
       expect(rules({ "src/config/env.ts": `export const x = ${bad};\n` }), bad).toEqual(["env-read-not-literal"]);

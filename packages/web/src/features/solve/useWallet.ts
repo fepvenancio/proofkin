@@ -1,6 +1,6 @@
 "use client";
 
-import { type AppConfig, type Wallet } from "@proofkin/core";
+import { type ChainConfig, type Wallet } from "@proofkin/core";
 import { type Address } from "viem";
 import { useAccount, useSwitchChain, useWalletClient } from "wagmi";
 
@@ -20,10 +20,10 @@ export interface WalletView {
  * "connect a wallet" at someone who is already connected. (2) A wallet on another network gets no client, so nothing
  * can be sent to the wrong chain by mistake, and a button to switch. (3) A connected account whose client has not
  * arrived is still "connecting", which is true for the moment it lasts.
- * @param app - The deployment, whose chain is the only one the page works on.
+ * @param app - The chain the page works on, the only one it will send to. A deployment is one, and so is a bare chain.
  * @returns The wallet's state, its client when it can send, and a way to switch network.
  */
-export function useWallet(app: AppConfig): WalletView {
+export function useWallet(app: ChainConfig): WalletView {
   const account = useAccount();
   const { data: client } = useWalletClient({ chainId: app.chain.id });
   const { switchChain } = useSwitchChain();

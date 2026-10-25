@@ -43,7 +43,14 @@ describe("the root layout", () => {
     expect(html).toMatch(/<html lang="en" class="font-recursive-test"/);
   });
 
-  it("shows what is wrong, and nothing else, when the deployment is not configured", async () => {
+  it("draws the page with only the chain set, since the admin console is what makes the contracts", async () => {
+    const html = await render({ NEXT_PUBLIC_CHAIN: "baseSepolia" });
+    expect(html).toContain("The header");
+    expect(html).toContain("The page");
+    expect(html).not.toContain("not configured");
+  });
+
+  it("shows what is wrong, and nothing else, when the chain is not configured", async () => {
     const html = await render({});
     expect(html).toContain("Proofkin is not configured");
     expect(html).toContain("NEXT_PUBLIC_CHAIN");
