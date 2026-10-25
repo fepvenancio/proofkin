@@ -21,7 +21,7 @@ deploy script and `pnpm launch:dry-run`.
 | `packages/vm/` | TypeScript reference VM, assembler and fixture generator |
 | `packages/core/` | What the apps share: config, chain reads, the mint flow, phases, storage, puzzle texts, the generated ABI |
 | `packages/playground/` | The first web page, with no framework: write a program, test it, watch it drawn, mint it, browse the gallery |
-| `packages/web/` | The Next.js app (in progress): the gallery, token pages and leaderboards are built from the chain on the server; RainbowKit connects wallets. Solving and minting come next |
+| `packages/web/` | The Next.js app (in progress): the gallery, token pages and leaderboards are built from the chain on the server; RainbowKit connects wallets. Solving and minting work on `/puzzles/[slug]/solve`; the admin console is next |
 | `fixtures/` | Differential test vectors, the solution circuits, SVG snapshots |
 | `tools/` | Mutation testing and fixture helpers |
 
@@ -50,6 +50,6 @@ mints the six fixture solutions so there is something to look at.
 
 More in [docs/M4-notes.md](docs/M4-notes.md). Launching, and what it needs from the owner: [docs/M5-notes.md](docs/M5-notes.md).
 The frontend: [docs/FRONTEND.md](docs/FRONTEND.md) (conventions), [docs/DESIGN.md](docs/DESIGN.md) (how it looks), and the notes
-on each step: [docs/F1-notes.md](docs/F1-notes.md), [docs/F2-notes.md](docs/F2-notes.md), [docs/F3a-notes.md](docs/F3a-notes.md).
+on each step: [docs/F1-notes.md](docs/F1-notes.md), [docs/F2-notes.md](docs/F2-notes.md), [docs/F3a-notes.md](docs/F3a-notes.md), [docs/F3b-notes.md](docs/F3b-notes.md).
 
 Needs Foundry and Node 22 or later.

@@ -10,6 +10,8 @@ import { type Hex } from "viem";
 export const queryKeys = {
   /** What `Renderer.render` draws for a program and a seed. Deterministic, so it never goes stale. */
   preview: (app: AppConfig, program: Hex, seed: Hex) => ["preview", app.chain.id, app.proofkin, program, seed] as const,
+  /** The chain's newest block, which tells a saved commit whether its reveal window is still open. */
+  latestBlock: (app: AppConfig) => ["latestBlock", app.chain.id, app.proofkin] as const,
   /** What the contract says about an exact program: free, already minted, or its puzzle full. */
   programStatus: (app: AppConfig, program: Hex) => ["programStatus", app.chain.id, app.proofkin, program] as const,
 };

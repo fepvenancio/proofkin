@@ -24,6 +24,7 @@ const withoutLiterals = (source: string) =>
   source.replace(TOKEN, (_all, literal?: string) => (literal ? `${literal[0]}${literal[0]}` : ""));
 
 const isClientModule = (source: string) => /^\s*(["'])use client\1/.test(source);
+const isServerAction = (source: string) => /^\s*(["'])use server\1/.test(source);
 const isServerOnly = (source: string) => /^\s*import\s+(["'])server-only\1/m.test(source);
 
 /** The files in `files` that `file` imports, resolving `@/` to `src/` and relative paths against the file. */
@@ -57,7 +58,9 @@ function join(directory: string, relative: string): string {
 /**
  * @notice Every way `files` breaks the architecture rules.
  * @dev (1) A client component, and anything it imports however deep, must never reach a module that imports
- * `server-only`: the bundler would fail the build, or worse, ship server code. (2) The environment is read in
+ * `server-only`: the bundler would fail the build, or worse, ship server code. The exception is a module that begins
+ * with `"use server"`: a server action, which a client component may import and call, and whose own imports are not
+ * followed. (2) The environment is read in
  * `src/config/env.ts` and nowhere else, so there is one list of what the app needs. (3) There, only as
  * `process.env.NAME`: Next.js replaces exactly those at build time, and in the browser `process.env` itself is empty.
  * (4) Every module in `src/chain/` reads the chain through a server-only RPC URL and says so with `import "server-only"`,
@@ -79,6 +82,9 @@ export function findViolations(files: Record<string, string>): Violation[] {
         if (seen.has(current)) return;
         seen.add(current);
         const text = code[current] as string;
+        // a server action is the one way a client component may call the server: the bundler leaves only a reference
+        // to it in the browser, so what it imports stays where it is
+        if (current !== file && isServerAction(text)) return;
         if (isServerOnly(text)) {
           violations.push({ file, rule: "client-reaches-server-only", detail: [...path, current].join(" -> ") });
           return;

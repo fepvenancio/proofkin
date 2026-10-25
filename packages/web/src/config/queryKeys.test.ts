@@ -38,6 +38,12 @@ describe("queryKeys", () => {
     expect(queryKeys.programStatus(app, PROGRAM)).not.toEqual(queryKeys.programStatus(otherCollection, PROGRAM));
   });
 
+  it("name the chain and the collection for the latest block, too", () => {
+    expect(queryKeys.latestBlock(app)).toEqual(queryKeys.latestBlock(app));
+    expect(queryKeys.latestBlock(app)).not.toEqual(queryKeys.latestBlock(otherChain));
+    expect(queryKeys.latestBlock(app)).not.toEqual(queryKeys.latestBlock(otherCollection));
+  });
+
   it("keep the two questions apart, even for the same program", () => {
     expect(queryKeys.preview(app, PROGRAM, SEED)[0]).not.toBe(queryKeys.programStatus(app, PROGRAM)[0]);
   });

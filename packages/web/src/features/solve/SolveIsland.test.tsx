@@ -21,7 +21,17 @@ vi.hoisted(() => {
 
 // The node is the one thing faked: a client whose reads answer from a script.
 const reader = vi.hoisted(() => ({ readContract: vi.fn() }));
-vi.mock("wagmi", () => ({ usePublicClient: () => reader }));
+// No wallet is connected in these tests: the editor, the test and the plate work without one. (The mint is in
+// `SolveIsland.mint.test.tsx`.)
+vi.mock("wagmi", () => ({
+  usePublicClient: () => reader,
+  useAccount: () => ({ status: "disconnected" }),
+  useWalletClient: () => ({ data: undefined }),
+  useSwitchChain: () => ({ switchChain: () => undefined }),
+}));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: () => undefined }) }));
+vi.mock("@/features/solve/refreshAfterMint", () => ({ refreshAfterMint: async () => ({ refreshed: false }) }));
+vi.mock("@/components/WalletButton", () => ({ WalletButton: () => <button type="button">Connect Wallet</button> }));
 
 const SVG = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
 // The tests run in the package's own directory.

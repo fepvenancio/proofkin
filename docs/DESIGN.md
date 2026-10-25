@@ -95,6 +95,16 @@ as you write, and while the next picture is drawn the last one stays, at half st
 - **Buttons**: the primary action is ink on paper, like the wallet button; everything else is an underlined link.
 - **On a phone** the plate follows the editor, since it is what editing is for but should not push the editor down.
 
+### The mint panel
+
+The mint sits under the test and is the one place the page asks for money, so it is plain. Before a mint it is a button,
+the reason it is closed when it is (a sentence beside it, not a tooltip), and one sentence saying a mint is two
+transactions and how long the wait is. Once a commit exists it is a numbered list, because a mint is a sequence: each step
+has a dot in the puzzle's hue, filled when it is done, ringed when it is the one the mint is at, and hollow when it is still
+to come. The salt is shown in the monospaced setting with what losing it means, and the countdown says blocks and time
+("2 more blocks to go (4 s)"). The only button that moves money is ink on paper, like the wallet's; "Forget" is the one
+destructive link, and asks first. The finished panel ends on the token with a link to it.
+
 ## Motion
 
 The art animates itself and nothing else does. A hover brightens a plate's edge in its puzzle's hue, which answers a

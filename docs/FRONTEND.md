@@ -66,6 +66,14 @@ More rules, each pinned by its own tests:
 - **A result belongs to what it was about.** A test result is kept with the text it was run on and compared to the text on
   screen, not cleared by an effect, and the page speaks only of the program on the screen: until an edit has settled, a
   query's answer is about an earlier one and is not shown.
+- **A server action believes nothing it is told.** `refreshAfterMint` is a public endpoint: it reads the transaction's receipt
+  itself and proves it was a solve of this collection before it expires anything, acts once per hash and only after it is
+  proven, and refuses beyond a small budget a minute. The architecture checker treats a module that begins with
+  `"use server"` as the boundary a client component may import, and does not follow its imports.
+- **The money logic is not in the page.** The commit, wait and reveal are core's, tested against a real chain; a page only
+  holds the commit in flight and places the words. What a button may do is a pure function (`mintGate`, `stepGate`), and
+  what step a mint is at is another (`resolveMintStep`), so the panel decides nothing. Tests drive the real flow through
+  `test/fakeChain.ts`, a chain in memory that answers exactly the calls the flow makes.
 - **A token that does not exist is a 404, not a 200.** No route that can say "not found" has a `loading` file above it:
   it would make Next.js send the shell before the page has read anything, and `notFound()` would then be a 200 with
   `noindex`. `test/status.test.ts` holds it.

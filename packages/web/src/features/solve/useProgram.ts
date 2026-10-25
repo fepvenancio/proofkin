@@ -3,16 +3,8 @@
 import { analyze, skeletonFor } from "@proofkin/core";
 import { useEffect, useMemo, useState } from "react";
 
+import { browserStorage } from "@/features/solve/browserStorage";
 import { loadDraft, saveDraft } from "@/features/solve/draft";
-
-/** `window.localStorage`, or nothing: reading it throws in some private modes, and there is none on a server. */
-function browserStorage(): Storage | undefined {
-  try {
-    return typeof window === "undefined" ? undefined : window.localStorage;
-  } catch {
-    return undefined;
-  }
-}
 
 /**
  * @notice The program being written for a puzzle: its text, what the text turns into, and the draft kept between visits.

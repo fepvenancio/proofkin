@@ -18,8 +18,16 @@ vi.hoisted(() => {
 vi.mock("@/chain/collection", () => ({ getCollection: vi.fn() }));
 // The island needs a browser and the wallet providers; this page's job is what it hands to it.
 vi.mock("@/features/solve/SolveIsland", () => ({
-  SolveIsland: ({ puzzleId, children }: { puzzleId: number; children: React.ReactNode }) => (
-    <div data-island data-puzzle={puzzleId}>
+  SolveIsland: ({
+    puzzleId,
+    facts,
+    children,
+  }: {
+    puzzleId: number;
+    facts?: { price: string; slotsLeft: number };
+    children: React.ReactNode;
+  }) => (
+    <div data-island data-puzzle={puzzleId} data-price={facts?.price} data-slots={facts?.slotsLeft}>
       {children}
     </div>
   ),
@@ -60,6 +68,19 @@ describe("the solve page", () => {
     render(await open("sort8", null));
     expect(screen.getByRole("heading", { level: 1, name: "SORT8" })).toBeInTheDocument();
     expect(screen.queryByText("Price")).not.toBeInTheDocument();
+  });
+
+  it("gives the island the same facts, because a reveal's price is what its button says", async () => {
+    const { container } = render(await open("sort8"));
+    const island = container.querySelector("[data-island]")!;
+    expect(island).toHaveAttribute("data-price", "0.01 ETH");
+    expect(island).toHaveAttribute("data-slots", "49");
+  });
+
+  it("gives the island no facts when the chain cannot be read, and it still stands", async () => {
+    const { container } = render(await open("sort8", null));
+    const island = container.querySelector("[data-island]")!;
+    expect(island).not.toHaveAttribute("data-price");
   });
 
   it("is not found for a puzzle that does not exist", async () => {

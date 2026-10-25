@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 /**
  * @notice Where a puzzle is solved: what it asks, an editor, a local test and a plate that redraws as you write.
  * @dev (1) The statement is a server component, rendered here from the cached collection and handed to the island as
- * its children, so only the editor, the test and the plate ship as client code. (2) The chain's facts (price, slots
+ * its children (and the facts go to the island too, for the price of a reveal), so only the editor, the test and the plate ship as client code. (2) The chain's facts (price, slots
  * left, smallest solution) are a courtesy: when it cannot be read the statement is shown without them, because writing
  * and testing a program need no chain. (3) The island is keyed by puzzle, so moving to another puzzle starts it afresh
  * and a draft is never carried across.
@@ -39,7 +39,7 @@ export default async function Page({ params }: Props) {
   };
 
   return (
-    <SolveIsland key={id} puzzleId={id}>
+    <SolveIsland key={id} puzzleId={id} facts={facts}>
       <PuzzleStatement puzzleId={id} facts={facts} />
     </SolveIsland>
   );

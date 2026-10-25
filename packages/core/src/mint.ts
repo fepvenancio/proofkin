@@ -8,7 +8,7 @@ import {
   UserRejectedRequestError,
 } from "viem";
 import { TRIALS } from "@proofkin/vm";
-import { proofkinAbi } from "./abi.ts";
+import { type proofkinAbi as ProofkinAbi, proofkinAbi } from "./abi.ts";
 import { commitBlockOf, currentBlock, type Reader } from "./chain.ts";
 import { commitHash, newSalt } from "./commitment.ts";
 import type { AppConfig } from "./config.ts";
@@ -42,7 +42,11 @@ const EXPIRED = "The 250-block reveal window for this commit has passed. Commit 
 /** Trials 0 and 1 are fixed edge cases, trials 2 to 9 random, and the contract only reports a trial its own puzzle has, so any from TRIALS on is one of the puzzle's further fixed cases. */
 const isFixedTrial = (trial: number): boolean => trial < 2 || trial >= TRIALS;
 
-const reasons: Record<string, (args: readonly unknown[]) => string> = {
+/** What the contract can revert with: the names of the errors in its ABI. */
+type ErrorName = Extract<(typeof ProofkinAbi)[number], { type: "error" }>["name"];
+type Reason = (args: readonly unknown[]) => string;
+
+const reasons = {
   NoCommit: () => "There is no commit for this program from this account: the account, the program or the salt does not match what was committed.",
   TooEarly: () => "Too early: a reveal has to wait until the commit is three blocks old.",
   Expired: () => EXPIRED,
@@ -65,11 +69,41 @@ const reasons: Record<string, (args: readonly unknown[]) => string> = {
   BadInputIndex: vmInvalid("a node reads an input the puzzle does not have", true),
   BadOutputIndex: vmInvalid("an output slot points at no node", true),
   DeadNode: ([node]) => `The program is not valid: node ${node} feeds no output.`,
-};
+} satisfies Partial<Record<ErrorName, Reason>>;
 
-function vmInvalid(what: string, withIndex = false): (args: readonly unknown[]) => string {
+function vmInvalid(what: string, withIndex = false): Reason {
   return ([index]) => `The program is not valid: ${what}${withIndex ? ` (node ${index})` : ""}.`;
 }
+
+/** The errors a minter is told about, in words. */
+export const MINT_ERROR_NAMES = Object.keys(reasons) as ErrorName[];
+
+/**
+ * The contract's other errors, which a minter cannot meet at commit or reveal. Listing them is what makes the map
+ * exhaustive: `errors.test.ts` fails when the contract gains an error that is in neither list, so a new revert cannot
+ * reach a player as a raw name.
+ */
+export const NOT_ON_THE_MINT_PATH = [
+  // the owner's: ownership and the renderer (the admin console)
+  "AlreadyInitialized",
+  "InvalidRenderer",
+  "NewOwnerIsZeroAddress",
+  "NoHandoverRequest",
+  "RendererLocked",
+  "Unauthorized",
+  // the token standard's: transfers, approvals and balances, and a token that does not exist
+  "AccountBalanceOverflow",
+  "BalanceQueryForZeroAddress",
+  "NotOwnerNorApproved",
+  "TokenDoesNotExist",
+  "TransferFromIncorrectOwner",
+  "TransferToNonERC721ReceiverImplementer",
+  "TransferToZeroAddress",
+  // unreachable: ids are sequential, and a program that validated has the right puzzle and input count
+  "TokenAlreadyExists",
+  "BadInputLength",
+  "UnknownPuzzle",
+] as const satisfies readonly ErrorName[];
 
 /** Turns anything thrown on the way into a sentence for the player. */
 export function friendlyError(err: unknown): string {
@@ -79,7 +113,7 @@ export function friendlyError(err: unknown): string {
     const reverted = err.walk((e) => e instanceof ContractFunctionRevertedError);
     if (reverted instanceof ContractFunctionRevertedError) {
       const name = reverted.data?.errorName;
-      const describe = name ? reasons[name] : undefined;
+      const describe = name ? (reasons as Partial<Record<string, Reason>>)[name] : undefined;
       if (describe) return describe(reverted.data?.args ?? []);
       return reverted.reason ?? reverted.shortMessage;
     }
