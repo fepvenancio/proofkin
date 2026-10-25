@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { type CSSProperties, type ReactNode, useState } from "react";
 
+import { Step, type StepState } from "@/components/Step";
 import { paths } from "@/config/routes";
 import { type WalletView } from "@/features/solve/useWallet";
 
@@ -48,8 +49,6 @@ export interface MintPanelProps {
   onLeave: () => void;
 }
 
-type State = "done" | "current" | "todo";
-
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 const primary = "rounded-[2px] bg-ink px-5 py-2.5 text-paper disabled:opacity-40";
 const link = "underline underline-offset-4";
@@ -71,7 +70,7 @@ export function MintPanel(props: MintPanelProps) {
   const copied = active !== undefined && copiedSalt === active.salt;
 
   const waiting = step.step === "waiting" || step.step === "checking";
-  const states: [State, State, State, State] = [
+  const states: [StepState, StepState, StepState, StepState] = [
     "done",
     step.step === "unsent" ? "current" : "done",
     step.step === "unsent" ? "todo" : waiting ? "current" : "done",
@@ -122,7 +121,7 @@ export function MintPanel(props: MintPanelProps) {
 
       {active && (
         <ol aria-label="Steps of this mint" className="mt-4 space-y-6">
-          <Item state="done" title="Salt saved">
+          <Step state="done" title="Salt saved">
             <p className="max-w-prose">
               {props.persistent
                 ? "Kept in this browser."
@@ -137,9 +136,9 @@ export function MintPanel(props: MintPanelProps) {
             >
               {copied ? "Copied" : "Copy salt"}
             </button>
-          </Item>
+          </Step>
 
-          <Item state={states[1]} title="Commit">
+          <Step state={states[1]} title="Commit">
             {step.step === "unsent" ? (
               props.busy ? (
                 <p>Confirm the transaction in your wallet…</p>
@@ -159,16 +158,16 @@ export function MintPanel(props: MintPanelProps) {
             ) : (
               <p>{`Committed in block ${active.commitBlock}.`}</p>
             )}
-          </Item>
+          </Step>
 
-          <Item state={states[2]} title={`Wait ${REVEAL_DELAY + 1} blocks`}>
+          <Step state={states[2]} title={`Wait ${REVEAL_DELAY + 1} blocks`}>
             {step.step === "waiting" && (
               <p className="tabular-nums">{`${plural(step.blocksUntilReady, "more block")} to go (${eta(step.blocksUntilReady)}).`}</p>
             )}
             {step.step === "checking" && <p>Checking the chain…</p>}
-          </Item>
+          </Step>
 
-          <Item state={states[3]} title="Reveal and mint">
+          <Step state={states[3]} title="Reveal and mint">
             {step.step === "ready" &&
               (props.busy ? (
                 <p>Confirm the transaction in your wallet…</p>
@@ -198,10 +197,10 @@ export function MintPanel(props: MintPanelProps) {
               </>
             )}
             {step.step === "revealed" && <p>Revealed.</p>}
-          </Item>
+          </Step>
 
           {step.step === "revealed" && (
-            <Item
+            <Step
               state="done"
               title={step.tokenId === undefined ? "Your token is minted" : `Token #${step.tokenId} is yours`}
             >
@@ -219,7 +218,7 @@ export function MintPanel(props: MintPanelProps) {
                   Mint another
                 </button>
               </p>
-            </Item>
+            </Step>
           )}
         </ol>
       )}
@@ -272,31 +271,5 @@ export function MintPanel(props: MintPanelProps) {
         </div>
       )}
     </section>
-  );
-}
-
-/** One step of the list: a marker that says whether it is done, the one it is at, or still to come, and its content. */
-function Item({ state, title, children }: { state: State; title: string; children?: ReactNode }) {
-  return (
-    <li
-      data-state={state}
-      aria-current={state === "current" ? "step" : undefined}
-      className="grid grid-cols-[1.25rem_1fr] gap-x-3"
-    >
-      <span
-        aria-hidden
-        className={`mt-1.5 size-3 rounded-full ${
-          state === "done"
-            ? "bg-puzzle-mark"
-            : state === "current"
-              ? "border-2 border-puzzle-glow bg-paper ring-2 ring-ink"
-              : "border-2 border-rule"
-        }`}
-      />
-      <div>
-        <h3 className={`font-semibold ${state === "todo" ? "text-graphite" : ""}`}>{title}</h3>
-        {children}
-      </div>
-    </li>
   );
 }

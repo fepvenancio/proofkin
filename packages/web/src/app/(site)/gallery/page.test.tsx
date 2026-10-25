@@ -1,12 +1,12 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import Page from "@/app/gallery/page";
+import Page from "@/app/(site)/gallery/page";
 import { getCollection } from "@/chain/collection";
 import { getSolvedEntries } from "@/chain/solved";
 import { type SolvedEntry } from "@/model/data";
 
-import { collection, entries } from "../../../test/data";
+import { collection, entries } from "../../../../test/data";
 
 vi.hoisted(() => {
   const settings = {

@@ -8,7 +8,7 @@ import { cookieToInitialState } from "wagmi";
 import { Providers } from "@/app/providers";
 import { ConfigProblems } from "@/components/ConfigProblems";
 import { SiteHeader } from "@/components/SiteHeader";
-import { readAppConfig } from "@/config/env";
+import { readChainConfig } from "@/config/env";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/config/site";
 import { createWagmiConfig } from "@/config/wagmi";
 
@@ -30,13 +30,15 @@ export const metadata: Metadata = {
 
 /**
  * @notice The root of every page.
- * @dev (1) A deployment that is not configured shows what is wrong and nothing else, so a bad environment is never a
- * stack trace. (2) Otherwise it reads the wallet cookie on the server and hands the connection to the providers as their
- * initial state. Reading headers makes every page dynamic, which is what reading the chain on each request needs anyway.
+ * @dev (1) A chain that is not configured shows what is wrong and nothing else, so a bad environment is never a stack
+ * trace. (2) Only the chain is needed here, not the contracts: the admin console deploys them, so it must draw before
+ * they exist. The site's own layout checks the contracts. (3) Otherwise it reads the wallet cookie on the server and
+ * hands the connection to the providers as their initial state. Reading headers makes every page dynamic, which is what
+ * reading the chain on each request needs anyway.
  * @param props - `children`: the page.
  */
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const config = readAppConfig();
+  const config = readChainConfig();
   if (!config.ok) {
     return (
       <html lang="en" className={recursive.variable}>

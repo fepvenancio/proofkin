@@ -6,11 +6,20 @@
 
 export interface Violation {
   file: string;
-  rule: "client-reaches-server-only" | "chain-module-not-server-only" | "env-outside-config" | "env-read-not-literal";
+  rule:
+    | "client-reaches-server-only"
+    | "chain-module-not-server-only"
+    | "env-outside-config"
+    | "env-read-not-literal"
+    | "launch-outside-admin"
+    | "admin-reached-from-outside";
   detail: string;
 }
 
 const ENV_MODULE = "src/config/env.ts";
+/** The only places that may carry the deployer's code: the console's route and its feature folder. */
+const ADMIN_FOLDERS = ["src/app/admin/", "src/features/admin/"];
+const LAUNCH_ENTRY = "@proofkin/core/launch";
 const EXTENSIONS = ["", ".ts", ".tsx", "/index.ts", "/index.tsx"];
 
 /** A string literal, or else a comment: matched in one pass so a `//` inside a string is not taken for a comment. */
@@ -92,6 +101,25 @@ export function findViolations(files: Record<string, string>): Violation[] {
         for (const next of localImports(current, text, code)) visit(next, [...path, current]);
       };
       visit(file, []);
+    }
+
+    // The bytecode of both contracts is about 64 KB of hex. It belongs to the admin route's bundle and to no visitor's.
+    if (!ADMIN_FOLDERS.some((folder) => file.startsWith(folder))) {
+      const specifiers = [...source.matchAll(/(?:from|import)\s+(["'])([^"']+)\1/g)].map((match) => match[2] as string);
+      if (specifiers.includes(LAUNCH_ENTRY)) {
+        violations.push({
+          file,
+          rule: "launch-outside-admin",
+          detail: `only ${ADMIN_FOLDERS.map((folder) => folder.slice(0, -1)).join(" and ")} import "${LAUNCH_ENTRY}"`,
+        });
+      }
+      if (specifiers.some((specifier) => specifier.startsWith("@/features/admin/"))) {
+        violations.push({
+          file,
+          rule: "admin-reached-from-outside",
+          detail: "the console is imported by src/app/admin only, so its code reaches no other page",
+        });
+      }
     }
 
     if (file.startsWith("src/chain/") && !isServerOnly(source)) {

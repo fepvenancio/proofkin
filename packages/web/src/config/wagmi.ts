@@ -1,4 +1,4 @@
-import { type AppConfig } from "@proofkin/core";
+import { type ChainConfig } from "@proofkin/core";
 import { connectorsForWallets } from "@rainbow-me/rainbowkit";
 import {
   coinbaseWallet,
@@ -9,11 +9,11 @@ import {
 } from "@rainbow-me/rainbowkit/wallets";
 import { cookieStorage, createConfig, createStorage, http } from "wagmi";
 
-import { requireAppConfig, walletConnectProjectId } from "@/config/env";
+import { requireChainConfig, walletConnectProjectId } from "@/config/env";
 
 export interface WagmiSettings {
-  /** The deployment the wallet talks to; its chain is the only chain offered. */
-  app: AppConfig;
+  /** The chain the wallet talks to, the only one offered. It needs no contract: the admin console deploys them. */
+  app: ChainConfig;
   /** True while rendering on the server, where no wallet connector can start. */
   server: boolean;
   /** Lets WalletConnect-based wallets in. Without it only browser and Coinbase wallets are offered. */
@@ -27,7 +27,7 @@ export interface WagmiSettings {
  * starts, and the server only needs the chain and the cookie to read the initial state. (3) Wallets that go through
  * WalletConnect are offered only when a project id exists. (4) Reads made at the same moment travel as one JSON-RPC
  * batch: the solve page asks three things about a program, and a public node rate-limits by request.
- * @param settings - The deployment, where this runs, and the optional WalletConnect project id.
+ * @param settings - The chain, where this runs, and the optional WalletConnect project id.
  * @returns The configuration. `getWagmiConfig` decides how often to build one: each server request gets its own, the
  * browser keeps one.
  */
@@ -58,11 +58,11 @@ let browserConfig: ReturnType<typeof createWagmiConfig> | undefined;
  * request's cookie (a server never counts as hydrated), so one shared by two requests would show a visitor the wallet
  * of whoever rendered after them. (2) In the browser there is one visitor and one store: a second configuration would
  * not see a connection made through the first, so it is built once.
- * @returns A configuration built from the app's settings.
+ * @returns A configuration built from the app's chain.
  */
 export function getWagmiConfig() {
   const create = (server: boolean) =>
-    createWagmiConfig({ app: requireAppConfig(), server, walletConnectProjectId: walletConnectProjectId() });
+    createWagmiConfig({ app: requireChainConfig(), server, walletConnectProjectId: walletConnectProjectId() });
 
   if (typeof window === "undefined") return create(true);
   browserConfig ??= create(false);

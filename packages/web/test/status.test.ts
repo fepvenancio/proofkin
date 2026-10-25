@@ -5,8 +5,11 @@ import { describe, expect, it } from "vitest";
 
 const app = (path: string) => new URL(`../src/app/${path}`, import.meta.url);
 
-/** Every route that can answer "not found". */
-const ROUTES = ["", "gallery", "puzzles/[slug]", "token/[id]"];
+/**
+ * Every route that can answer "not found", and the two folders above them: a loading file in the app root or in the
+ * site's group would wrap them all.
+ */
+const ROUTES = ["", "(site)", "(site)/gallery", "(site)/puzzles/[slug]", "(site)/token/[id]"];
 
 describe("a missing token, puzzle or page is a 404", () => {
   // A `loading` file makes Next.js send the page's shell before the page has read anything, with status 200, so a

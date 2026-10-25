@@ -105,6 +105,29 @@ to come. The salt is shown in the monospaced setting with what losing it means, 
 ("2 more blocks to go (4 s)"). The only button that moves money is ink on paper, like the wallet's; "Forget" is the one
 destructive link, and asks first. The finished panel ends on the token with a link to it.
 
+### The console
+
+`/admin` is the back room of the same album: the same paper, ink and graphite, no new colour, and no link to it in the
+navigation. It is for whoever launches and looks after the collection, and it is not for search engines (`noindex`).
+
+- **Before a collection exists** it is a numbered list, because a launch is a sequence: the owner, the renderer, the
+  collection, and the settings to give the site. It reuses the mint panel's step marker (filled when done, ringed when it
+  is the one the launch is at, hollow when still to come). The one button that moves money is ink on paper, with the reason
+  it is closed beside it as a sentence, never a tooltip.
+- **The owner is a field, not a default.** It can be the connected wallet ("Use my wallet"), but it has to be named, because
+  who administers the collection must never be a side effect of whichever key sends the deployment. A wrong checksum is
+  refused, since that is what a mistyped character looks like.
+- **Base mainnet is said once, plainly**, with a hardware wallet recommended, and asks for the last six characters of the
+  owner's address before the button opens.
+- **A launch under way shows its owner in place of the form**, so it cannot be changed halfway, and its next step is a
+  "Continue deploying" button with the same gates.
+- **When it is done** the page gives the four lines the site reads, in the monospaced setting with a "Copy settings" link,
+  one sentence on where they go and why, links to both contracts on the explorer, and the commands that publish the
+  source, marked as not yet tried against a real explorer.
+- **The collection** is a definition list (chain, address, owner, renderer and whether it is locked, price, how much is
+  solved, fees held), with the addresses whole, since a person is meant to check them character by character. Anyone can
+  see it; who may change anything is the owner's wallet, and the contract decides that.
+
 ## Motion
 
 The art animates itself and nothing else does. A hover brightens a plate's edge in its puzzle's hue, which answers a

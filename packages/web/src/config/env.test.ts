@@ -3,7 +3,16 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-import { publicEnv, readAppConfig, requireAppConfig, serverRpcUrl, walletConnectProjectId } from "@/config/env";
+import {
+  collectionFromEnv,
+  publicEnv,
+  readAppConfig,
+  readChainConfig,
+  requireAppConfig,
+  requireChainConfig,
+  serverRpcUrl,
+  walletConnectProjectId,
+} from "@/config/env";
 
 const PROOFKIN = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 const RENDERER = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
@@ -39,6 +48,71 @@ describe("readAppConfig", () => {
 
   it("does not read the Vite names", () => {
     expect(readAppConfig({ VITE_CHAIN: "anvil", VITE_PROOFKIN: PROOFKIN, VITE_RENDERER: RENDERER }).ok).toBe(false);
+  });
+});
+
+describe("readChainConfig", () => {
+  it("needs the chain and no contract, which is all the admin console has before it deploys one", () => {
+    const result = readChainConfig({ NEXT_PUBLIC_CHAIN: "baseSepolia", NEXT_PUBLIC_RPC_URL: "https://rpc.example/k" });
+    if (!result.ok) throw new Error(result.problems.join("; "));
+    expect(result.config).toMatchObject({ name: "baseSepolia", rpcUrl: "https://rpc.example/k" });
+    expect(result.config.chain.id).toBe(84532);
+  });
+
+  it("reports the chain's problems only, naming the NEXT_PUBLIC_ variable", () => {
+    const result = readChainConfig({ NEXT_PUBLIC_CHAIN: "mainnet" });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    const text = result.problems.join("\n");
+    expect(text).toMatch(/NEXT_PUBLIC_CHAIN/);
+    expect(text).not.toMatch(/PROOFKIN|RENDERER/);
+  });
+
+  it("does not read the Vite names", () => {
+    expect(readChainConfig({ VITE_CHAIN: "anvil" }).ok).toBe(false);
+  });
+});
+
+describe("requireChainConfig", () => {
+  it("returns the chain", () => {
+    expect(requireChainConfig({ NEXT_PUBLIC_CHAIN: "base" }).chain.id).toBe(8453);
+  });
+
+  it("throws with every problem listed", () => {
+    expect(() => requireChainConfig({ NEXT_PUBLIC_CHAIN: "x", NEXT_PUBLIC_BLOCK_TIME: "0" })).toThrow(
+      /NEXT_PUBLIC_CHAIN[\s\S]*NEXT_PUBLIC_BLOCK_TIME/,
+    );
+  });
+});
+
+describe("collectionFromEnv", () => {
+  it("is the collection the settings name, when they name one completely", () => {
+    const source = collectionFromEnv(valid);
+    expect(source.kind).toBe("configured");
+    if (source.kind === "configured") expect(source.app).toMatchObject({ proofkin: PROOFKIN, renderer: RENDERER });
+  });
+
+  it("is none when the settings name no contract at all, as before the first deployment", () => {
+    expect(collectionFromEnv({ NEXT_PUBLIC_CHAIN: "baseSepolia" })).toEqual({ kind: "none" });
+    expect(
+      collectionFromEnv({ NEXT_PUBLIC_CHAIN: "baseSepolia", NEXT_PUBLIC_PROOFKIN: "  ", NEXT_PUBLIC_RENDERER: "" }),
+    ).toEqual({
+      kind: "none",
+    });
+  });
+
+  it("is broken, with the problems, when only part of a collection is named, since that is a mistake and not an absence", () => {
+    const onlyOne = collectionFromEnv({ NEXT_PUBLIC_CHAIN: "baseSepolia", NEXT_PUBLIC_PROOFKIN: PROOFKIN });
+    expect(onlyOne.kind).toBe("broken");
+    if (onlyOne.kind === "broken") expect(onlyOne.problems.join("\n")).toMatch(/NEXT_PUBLIC_RENDERER/);
+
+    const typo = collectionFromEnv({ ...valid, NEXT_PUBLIC_PROOFKIN: "0xnope" });
+    expect(typo.kind).toBe("broken");
+    if (typo.kind === "broken") expect(typo.problems.join("\n")).toMatch(/NEXT_PUBLIC_PROOFKIN/);
+  });
+
+  it("is broken when the contracts are right and the deploy block is not", () => {
+    expect(collectionFromEnv({ ...valid, NEXT_PUBLIC_DEPLOY_BLOCK: "soon" }).kind).toBe("broken");
   });
 });
 

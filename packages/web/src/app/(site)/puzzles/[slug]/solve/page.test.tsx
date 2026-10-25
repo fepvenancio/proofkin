@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import Page, { generateMetadata } from "@/app/puzzles/[slug]/solve/page";
+import Page, { generateMetadata } from "@/app/(site)/puzzles/[slug]/solve/page";
 import { getCollection } from "@/chain/collection";
 
-import { collection } from "../../../../../test/data";
+import { collection } from "../../../../../../test/data";
 
 vi.hoisted(() => {
   const settings = {
