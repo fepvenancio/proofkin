@@ -128,6 +128,26 @@ describe("MintPanel", () => {
       vi.unstubAllGlobals();
     });
 
+    it("does not call a new commit's salt copied because the last one's was", async () => {
+      const writeText = vi.fn(async () => undefined);
+      vi.stubGlobal("navigator", { clipboard: { writeText } });
+      const first = props({ active: pending(), step: { step: "unsent" } });
+      const { rerender } = render(<MintPanel {...first} />);
+      fireEvent.click(screen.getByRole("button", { name: "Copy salt" }));
+      await screen.findByRole("button", { name: "Copied" });
+
+      // the same panel, now showing another commit, as when the player starts over after a window closed
+      const otherSalt: Hex = `0x${"cd".repeat(32)}`;
+      rerender(
+        <MintPanel
+          {...props({ active: pending({ salt: otherSalt, hash: `0x${"33".repeat(32)}` }), step: { step: "unsent" } })}
+        />,
+      );
+      expect(screen.getByRole("button", { name: "Copy salt" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Copied" })).not.toBeInTheDocument();
+      vi.unstubAllGlobals();
+    });
+
     it("sends a commit that was saved but not sent", () => {
       const { p } = show({ active: pending(), step: { step: "unsent" } });
       fireEvent.click(screen.getByRole("button", { name: "Send commit" }));

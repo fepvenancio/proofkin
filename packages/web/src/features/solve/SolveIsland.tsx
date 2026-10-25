@@ -11,7 +11,7 @@ import {
   skeletonFor,
   stepGate,
 } from "@proofkin/core";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useMemo, useState } from "react";
 import { type Hex } from "viem";
@@ -113,6 +113,7 @@ function Workbench({ puzzleId, facts, children }: { puzzleId: number; facts?: Pu
   const note = programNote(onChain);
 
   const router = useRouter();
+  const queryClient = useQueryClient();
   const wallet = useWallet(app);
   const store = useMemo(() => new PendingStore(browserStorage()), []);
   const flow = useMintFlow({
@@ -121,7 +122,12 @@ function Workbench({ puzzleId, facts, children }: { puzzleId: number; facts?: Pu
     wallet,
     store,
     refresh: refreshAfterMint,
-    onRevealed: () => router.refresh(),
+    // A reveal makes what the contract said about this program untrue, and a status that is merely old is not asked
+    // again until the page is refocused or the program edited: "Mint another" would offer a commit the reveal refuses.
+    onRevealed: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.programStatuses(app) });
+      router.refresh();
+    },
   });
   // A saved commit knows when it was sent, not what time it is: the chain's newest block says whether its window is
   // still open. While a mint is in flight its own block feed is fresher.

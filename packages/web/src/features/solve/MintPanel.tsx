@@ -66,7 +66,9 @@ const link = "underline underline-offset-4";
 export function MintPanel(props: MintPanelProps) {
   const { active, step, price, blockTimeSeconds } = props;
   const eta = (blocks: number) => formatDuration(etaSeconds(blocks, blockTimeSeconds));
-  const [copied, setCopied] = useState(false);
+  // The salt that was copied, not whether one was: the panel outlives a commit, and the next one has a new salt.
+  const [copiedSalt, setCopiedSalt] = useState<string>();
+  const copied = active !== undefined && copiedSalt === active.salt;
 
   const waiting = step.step === "waiting" || step.step === "checking";
   const states: [State, State, State, State] = [
@@ -131,7 +133,7 @@ export function MintPanel(props: MintPanelProps) {
             <button
               type="button"
               className={`${link} mt-2`}
-              onClick={() => void navigator.clipboard?.writeText(active.salt).then(() => setCopied(true))}
+              onClick={() => void navigator.clipboard?.writeText(active.salt).then(() => setCopiedSalt(active.salt))}
             >
               {copied ? "Copied" : "Copy salt"}
             </button>

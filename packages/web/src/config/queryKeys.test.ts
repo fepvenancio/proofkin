@@ -44,6 +44,14 @@ describe("queryKeys", () => {
     expect(queryKeys.latestBlock(app)).not.toEqual(queryKeys.latestBlock(otherCollection));
   });
 
+  it("give every program's status one shared beginning, so a mint can end them all at once, for this collection only", () => {
+    const all = queryKeys.programStatuses(app);
+    expect(queryKeys.programStatus(app, PROGRAM).slice(0, all.length)).toEqual(all);
+    expect(queryKeys.programStatus(app, "0x040506" as Hex).slice(0, all.length)).toEqual(all);
+    expect(queryKeys.programStatus(otherChain, PROGRAM).slice(0, all.length)).not.toEqual(all);
+    expect(queryKeys.programStatus(otherCollection, PROGRAM).slice(0, all.length)).not.toEqual(all);
+  });
+
   it("keep the two questions apart, even for the same program", () => {
     expect(queryKeys.preview(app, PROGRAM, SEED)[0]).not.toBe(queryKeys.programStatus(app, PROGRAM)[0]);
   });

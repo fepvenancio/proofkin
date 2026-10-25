@@ -167,6 +167,22 @@ describe("minting from the solve page", () => {
       await waitFor(() => expect(world.routerRefresh).toHaveBeenCalled());
     });
 
+    it("closes the commit again for the program just minted, when the player chooses to mint another", async () => {
+      connect();
+      open();
+      await readyToCommit();
+      click("Commit solution");
+      await panel().findByText(/^Committed in block/);
+      act(() => world.chain.mine(3));
+      fireEvent.click(await panel().findByRole("button", { name: /Reveal and mint/ }));
+      await panel().findByText("Token #1 is yours");
+
+      fireEvent.click(panel().getByRole("button", { name: "Mint another" }));
+      // what the contract said about this program is now false, and asking again must not wait for a refocus or an edit
+      await waitFor(() => expect(panel().getByText("This exact program has already been minted.")).toBeInTheDocument());
+      expect(panel().getByRole("button", { name: "Commit solution" })).toBeDisabled();
+    });
+
     it("saves the commit before it is sent, with the account that will have to reveal it", async () => {
       connect();
       open();

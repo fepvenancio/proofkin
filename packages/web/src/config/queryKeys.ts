@@ -12,6 +12,8 @@ export const queryKeys = {
   preview: (app: AppConfig, program: Hex, seed: Hex) => ["preview", app.chain.id, app.proofkin, program, seed] as const,
   /** The chain's newest block, which tells a saved commit whether its reveal window is still open. */
   latestBlock: (app: AppConfig) => ["latestBlock", app.chain.id, app.proofkin] as const,
+  /** The beginning every `programStatus` key shares: what a mint ends, since it changes the answer for its program. */
+  programStatuses: (app: AppConfig) => ["programStatus", app.chain.id, app.proofkin] as const,
   /** What the contract says about an exact program: free, already minted, or its puzzle full. */
-  programStatus: (app: AppConfig, program: Hex) => ["programStatus", app.chain.id, app.proofkin, program] as const,
+  programStatus: (app: AppConfig, program: Hex) => [...queryKeys.programStatuses(app), program] as const,
 };
